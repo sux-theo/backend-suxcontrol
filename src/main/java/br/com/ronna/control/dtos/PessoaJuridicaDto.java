@@ -33,4 +33,6 @@ public class PessoaJuridicaDto {
 
     private UUID empresa;
 
+    private String isFechamentoSeparado;
+
 }

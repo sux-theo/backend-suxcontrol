@@ -101,7 +101,7 @@ public class PessoaJuridicaController {
         }
 
 
-
+        clientePJModel.setFechamentoSeparado(Boolean.valueOf(pessoaJuridicaDto.getIsFechamentoSeparado()));
         clientePJModel.setClienteStatus(ClienteStatus.ATIVO);
         clientePJModel.setClienteDataCriacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
         clientePJModel.setClienteDataAtualizacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
@@ -145,6 +145,7 @@ public class PessoaJuridicaController {
                 pessoaJuridicaModel.setEmpresa(pessoaJuridicaModel.getEmpresa());
             }
 
+            pessoaJuridicaModel.setFechamentoSeparado(Boolean.valueOf(pessoaJuridicaDto.getIsFechamentoSeparado()));
             pessoaJuridicaModel.setClienteStatus(ClienteStatus.ATIVO);
             pessoaJuridicaService.save(pessoaJuridicaModel);
 

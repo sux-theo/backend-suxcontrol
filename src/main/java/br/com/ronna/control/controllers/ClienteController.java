@@ -46,4 +46,5 @@ public class ClienteController {
         Page<ClienteModel> clienteModelPage = clienteService.findAll(pageable);
         return ResponseEntity.status(HttpStatus.OK).body(clienteModelPage);
     }
+
 }

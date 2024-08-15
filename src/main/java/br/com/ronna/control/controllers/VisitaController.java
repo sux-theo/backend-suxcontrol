@@ -1,5 +1,6 @@
 package br.com.ronna.control.controllers;
 
+import br.com.ronna.control.dtos.FiltroVisitaDto;
 import br.com.ronna.control.dtos.PeriodoDto;
 import br.com.ronna.control.dtos.VisitaDto;
 import br.com.ronna.control.models.FuncionarioModel;
@@ -8,6 +9,7 @@ import br.com.ronna.control.services.ClienteService;
 import br.com.ronna.control.services.FuncionarioService;
 import br.com.ronna.control.services.LocalService;
 import br.com.ronna.control.services.VisitaService;
+import br.com.ronna.control.utils.CalculoHoras;
 import lombok.extern.log4j.Log4j2;
 import lombok.var;
 import org.springframework.beans.BeanUtils;
@@ -34,16 +36,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class VisitaController {
 
     @Autowired
-    VisitaService visitaService;
+    private VisitaService visitaService;
 
     @Autowired
-    ClienteService clienteService;
+    private ClienteService clienteService;
 
     @Autowired
-    FuncionarioService funcionarioService;
+    private FuncionarioService funcionarioService;
 
     @Autowired
-    LocalService localService;
+    private LocalService localService;
 
     @GetMapping
     public ResponseEntity<Page<VisitaModel>> listaTodasVisitas(@PageableDefault(page = 0, size = 100, sort = "visitaInicio", direction = Sort.Direction.ASC)Pageable pageable) {
@@ -64,6 +66,19 @@ public class VisitaController {
         }
     }
 
+    @PostMapping("/funcionario/{funcionarioId}")
+    public ResponseEntity<Object> buscaVisitaFuncionario(@PathVariable (value = "funcionarioId")UUID funcionarioId,
+                                                         @PageableDefault(page = 0, size = 100, sort = "visitaInicio", direction = Sort.Direction.ASC)Pageable pageable
+                                                         ,@RequestBody FiltroVisitaDto fitlroVisitaDto){
+        var funcionarioModelOptional = funcionarioService.findById(funcionarioId);
+        if(!funcionarioModelOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Funcionario selecionado não encontrado!");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(visitaService.findByFuncionarioIdAndPeriodo(funcionarioModelOptional.get(), fitlroVisitaDto.getVisitaInicio(), fitlroVisitaDto.getVisitaFinal(),pageable));
+        //return ResponseEntity.status(HttpStatus.OK).body(visitaService.findByFuncionarioId(funcionarioModelOptional.get(), pageable));
+    }
+
     @GetMapping("/cliente/{clienteId}")
     public ResponseEntity<Object> listarVisitasPorClienteEPeriodo(@PathVariable (value = "clienteId") UUID clienteId, @RequestBody PeriodoDto periodoDto,
                                                                   @PageableDefault(page = 0, size = 100, sort = "visitaInicio", direction = Sort.Direction.ASC) Pageable pageable) {
@@ -82,28 +97,41 @@ public class VisitaController {
     @PostMapping("/novo")
     public ResponseEntity<Object> criarVisita(@RequestBody VisitaDto visitaDto) {
         var visitaModel = new VisitaModel();
-        BeanUtils.copyProperties(visitaDto, visitaModel);
+
+        // Ajusta o Horário recebido do navegador para o GMT-3
+        // visitaModel.setVisitaInicio(visitaDto.getVisitaInicio().minusHours(3));
+        // visitaModel.setVisitaFinal(visitaDto.getVisitaFinal().minusHours(3));
+
+        visitaModel.setVisitaInicio(visitaDto.getVisitaInicio());
+        visitaModel.setVisitaFinal(visitaDto.getVisitaFinal());
+        visitaModel.setVisitaRemoto(visitaDto.isVisitaRemoto());
+        visitaModel.setVisitaTotalAbono(visitaDto.getVisitaTotalAbono());
+        visitaModel.setVisitaValorProdutos(visitaDto.getVisitaValorProdutos());
+        visitaModel.setVisitaDescricao(visitaDto.getVisitaDescricao());
 
         var clienteModelOptional = clienteService.findById(visitaDto.getCliente());
         if(!clienteModelOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Cliente não encontrado!");
         }
         visitaModel.setCliente(clienteModelOptional.get());
-
-        var localModelOptional = localService.findById(visitaDto.getLocal());
-        if(localModelOptional.isPresent()) {
+        if(visitaDto.getLocal() != null){
+            log.debug("Visita com local diferente de nulo!");
+            var localModelOptional = localService.findById(visitaDto.getLocal());
             visitaModel.setLocal(localModelOptional.get());
+        } else {
+            log.debug("Visita com local em nulo!");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro: Cliente sem Local cadastrado!");
         }
 
         Set<FuncionarioModel> funcTemp = new HashSet<>();
         AtomicBoolean funcionarioTeste = new AtomicBoolean(false);
-        visitaDto.getFuncionarios().forEach(f -> {
-            var funcionarioModelOptinal = funcionarioService.findById(f.getFuncionarioId());
-            if(!funcionarioModelOptinal.isPresent()){
+        visitaDto.getFuncionarios().forEach(v -> {
+            var funcionarioModelOptional = funcionarioService.findById(v.getFuncionarioId());
+            if(!funcionarioModelOptional.isPresent()){
                 funcionarioTeste.set(true);
                 return;
             }
-            funcTemp.add(funcionarioModelOptinal.get());
+            funcTemp.add(funcionarioModelOptional.get());
         });
         if(funcionarioTeste.get()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Funcionário não encontrado!");
@@ -112,6 +140,10 @@ public class VisitaController {
         visitaModel.setFuncionarios(funcTemp);
         visitaModel.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
         visitaModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+
+        CalculoHoras calculoHoras = new CalculoHoras();
+
+        visitaModel.setVisitaTotalHoras(calculoHoras.diferencaInicioFim(visitaModel.getVisitaInicio(), visitaModel.getVisitaFinal()));
 
         visitaService.save(visitaModel);
         log.debug(visitaModel);
@@ -131,22 +163,20 @@ public class VisitaController {
 
         var clienteModel = clienteService.findById(visitaDto.getCliente());
         visitaModelOptional.get().setCliente(clienteModel.get());
-
-        var localModelOptional = localService.findById(visitaDto.getLocal());
-        if(localModelOptional.isPresent()) {
+        if(visitaDto.getLocal() != null){
+            log.debug("Visita com local diferente de nulo!");
+            var localModelOptional = localService.findById(visitaDto.getLocal());
             visitaModelOptional.get().setLocal(localModelOptional.get());
+        } else {
+            log.debug("Visita com local em nulo!");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro: Cliente sem Local cadastrado!");
         }
 
         Set<FuncionarioModel> funcTemp = new HashSet<>();
         visitaDto.getFuncionarios().forEach(f -> {
-            // var funcionarioModelOptinal = funcionarioService.findById(f.getFuncionarioId());
-            // var funcionarioModelOptinal = funcionarioService.findById(f);
-            // if(funcionarioModelOptinal.isPresent()){
-            //    funcTemp.add(funcionarioModelOptinal.get());
-            // }
-            var funcionarioModelOptinal = funcionarioService.findById(f.getFuncionarioId());
-            if(funcionarioModelOptinal.isPresent()){
-                funcTemp.add(f);
+            var funcionarioModelOptional = funcionarioService.findById(f.getFuncionarioId());
+            if(funcionarioModelOptional.isPresent()){
+                funcTemp.add(funcionarioModelOptional.get());
             }
         });
         visitaModelOptional.get().setFuncionarios(funcTemp);
@@ -155,11 +185,14 @@ public class VisitaController {
 
         visitaModelOptional.get().setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
 
+        CalculoHoras calculoHoras = new CalculoHoras();
+        visitaModelOptional.get().setVisitaTotalHoras(calculoHoras.diferencaInicioFim(visitaModelOptional.get().getVisitaInicio(), visitaModelOptional.get().getVisitaFinal()));
+
         visitaService.save(visitaModelOptional.get());
         return ResponseEntity.status(HttpStatus.CREATED).body(visitaModelOptional.get());
     }
 
-    // Mapeamento de endpoint para o fechamento.
+    // TODO: Mapeamento de endpoint para o fechamento. (Verificar)
     @GetMapping("/clientelocal/{clienteLocalId}")
     public ResponseEntity<Object> getVisitasPorClienteLocalEPeriodo(@PathVariable (value = "clienteLocalId") UUID clienteLocalId, @RequestBody PeriodoDto periodoDto,
                                                                     @PageableDefault(page = 0, size = 100, sort = "visita_inicio", direction = Sort.Direction.ASC) Pageable pageable) {

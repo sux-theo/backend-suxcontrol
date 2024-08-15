@@ -1,9 +1,11 @@
 package br.com.ronna.control.services;
 
+import br.com.ronna.control.models.ClienteModel;
 import br.com.ronna.control.models.FechamentoModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,4 +18,10 @@ public interface FechamentoService {
     void save(FechamentoModel fechamentoModel);
 
     void delete(FechamentoModel fechamentoModel);
+
+    Page<FechamentoModel> findFechamentoModelsByCliente(ClienteModel clienteId, Pageable pageable);
+
+    Optional<FechamentoModel> findFechamentoModelsByClienteIdAndPeriodo(UUID cliente, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal);
+
+    Optional<FechamentoModel> findFechamentoModelByLocalIdEPeriodo(UUID clienteLocalId, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal);
 }
