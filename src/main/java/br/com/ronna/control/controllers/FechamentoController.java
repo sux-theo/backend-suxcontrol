@@ -108,7 +108,7 @@ public class FechamentoController {
             }
         }
 
-
+        //TODO: ajustar o fechamento por local
         //Criar Fechamento por Local
         for (ClienteModel clienteModel : clientesFechamentosSeparados) {
             Optional<ContratoModel> contratoModelOptional = contratoService.findContratoModelByCliente(clienteModel);
