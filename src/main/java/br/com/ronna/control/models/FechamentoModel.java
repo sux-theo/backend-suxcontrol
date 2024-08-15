@@ -4,6 +4,8 @@ import br.com.ronna.control.enums.FechamentoStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -31,8 +33,13 @@ public class FechamentoModel {
 
     private Double fechamentoValorProdutos;
 
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name="localId")
     private LocalModel local;
+
+    @ManyToOne
+    @JoinColumn(name = "clienteId")
+    private ClienteModel cliente;
 
     @OneToMany
     private Set<VisitaModel> visitas;
@@ -42,10 +49,10 @@ public class FechamentoModel {
     private FechamentoStatus fechamentoStatus;
     
     @Column(nullable = false)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdDate;
     
     @Column(nullable = false)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedDate;
 }

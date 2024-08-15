@@ -14,4 +14,11 @@ public class CalculoHoras {
         log.info("UNTIL: " + Double.valueOf(inicio.until(fim, ChronoUnit.MINUTES)) / 60);
         return (Double.valueOf( inicio.until(fim, ChronoUnit.MINUTES)) - totalAbono)/ 60;
     }
+
+    // Retorna o total de tempo em minutos
+    public Double diferencaInicioFim(LocalDateTime inicio, LocalDateTime fim) {
+
+        log.info("UNTIL: " + Double.valueOf(inicio.until(fim, ChronoUnit.MINUTES)) / 60);
+        return (Double.valueOf( inicio.until(fim, ChronoUnit.MINUTES)))/ 60;
+    }
 }

@@ -2,6 +2,7 @@ package br.com.ronna.control.models;
 
 import br.com.ronna.control.enums.FuncionarioStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
@@ -62,8 +63,5 @@ public class FuncionarioModel {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private FuncionarioStatus funcionarioStatus;
-
-    @ManyToMany(mappedBy = "funcionarios")
-    private Set<VisitaModel> visitas;
 
 }

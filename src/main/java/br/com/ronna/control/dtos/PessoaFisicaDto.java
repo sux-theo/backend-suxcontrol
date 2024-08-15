@@ -29,4 +29,6 @@ public class PessoaFisicaDto {
 
     private UUID empresa;
 
+    private boolean isFechamentoSeparado;
+
 }

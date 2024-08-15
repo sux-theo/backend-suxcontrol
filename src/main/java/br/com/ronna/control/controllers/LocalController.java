@@ -35,7 +35,7 @@ public class LocalController {
     ClienteService clienteService;
 
     @GetMapping("/{clienteId}")
-    public ResponseEntity<Object> listaLocaisPorCliente(@PathVariable (value = "clienteId") UUID clienteId, @PageableDefault(page = 0, size = 10, sort = "localNome", direction = Sort.Direction.ASC)Pageable pageable) {
+    public ResponseEntity<Object> listaLocaisPorCliente(@PathVariable (value = "clienteId") UUID clienteId, @PageableDefault(page = 0, size = 100, sort = "localNome", direction = Sort.Direction.ASC)Pageable pageable) {
         var clienteModelOptional = clienteService.findById(clienteId);
         if(!clienteModelOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Cliente não encontrado!");
@@ -107,4 +107,5 @@ public class LocalController {
         localService.save(localModelOptional.get());
         return ResponseEntity.status(HttpStatus.OK).body(localModelOptional.get());
     }
+
 }

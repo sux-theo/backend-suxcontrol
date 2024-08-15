@@ -54,4 +54,9 @@ public class ContratoServiceImpl implements ContratoService {
         return contratoRepository.findByContratoIdAndCliente(contratoId, clienteId);
     }
 
+    @Override
+    public Optional<ContratoModel> findContratoModelByCliente(ClienteModel clienteModel) {
+        return contratoRepository.findContratoModelByCliente(clienteModel);
+    }
+
 }
