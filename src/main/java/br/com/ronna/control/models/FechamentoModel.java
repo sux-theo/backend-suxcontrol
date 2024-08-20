@@ -4,6 +4,7 @@ import br.com.ronna.control.enums.FechamentoStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
+import lombok.ToString;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -16,6 +17,7 @@ import java.util.UUID;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Table(name = "TB_FECHAMENTOS")
+@ToString(exclude = {"local", "cliente"})
 public class FechamentoModel {
     
     @Id

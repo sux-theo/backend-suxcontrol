@@ -5,9 +5,11 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -15,6 +17,7 @@ import java.util.UUID;
 @Entity
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Table(name = "TB_LOCAL")
+@ToString(exclude = {"cliente", "fechamentos"})
 public class LocalModel {
 
     @Id
@@ -45,4 +48,19 @@ public class LocalModel {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private LocalStatus localStatus;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LocalModel that = (LocalModel) o;
+        return Objects.equals(localId, that.localId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(localId);
+    }
+
+
 }

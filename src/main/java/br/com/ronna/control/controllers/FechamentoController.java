@@ -10,6 +10,7 @@ import br.com.ronna.control.utils.CalculoHoras;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -50,6 +51,11 @@ public class FechamentoController {
     @GetMapping
     public ResponseEntity<Page<FechamentoModel>> findAll(@PageableDefault(page = 0, size = 100, sort = "fechamentoInicio", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.findAll(pageable));
+    }
+
+    @GetMapping("/{fechamentoId}")
+    public ResponseEntity<FechamentoModel> findById(@PathVariable UUID fechamentoId) {
+        return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.findById(fechamentoId).get());
     }
 
     @GetMapping("/cliente/{clienteId}")
@@ -93,107 +99,110 @@ public class FechamentoController {
     public ResponseEntity<Object> novoFechamento(@RequestBody FechamentoNovoDto fechamentoNovoDto) {
         log.debug(fechamentoNovoDto.toString());
 
-        Set<ClienteModel> clientesFechamentosSeparados = new HashSet<>();
-        Set<ClienteModel> clientesFechamentosJuntos = new HashSet<>();
+        try {
+            Set<ClienteModel> clientesFechamentosSeparados = new HashSet<>();
+            Set<ClienteModel> clientesFechamentosJuntos = new HashSet<>();
 
-        for (UUID clienteId : fechamentoNovoDto.getClientesSelecionados()) {
-            Optional<ClienteModel> clienteModelOptinal  = clienteService.findById(clienteId);
-            if(!clienteModelOptinal.isPresent()){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: cliente selecionado não encontrado: " + clienteId);
+            for (UUID clienteId : fechamentoNovoDto.getClientesSelecionados()) {
+                Optional<ClienteModel> clienteModelOptinal = clienteService.findById(clienteId);
+                if (!clienteModelOptinal.isPresent()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: cliente selecionado não encontrado: " + clienteId);
+                }
+                if (clienteModelOptinal.get().isFechamentoSeparado()) {
+                    clientesFechamentosSeparados.add(clienteModelOptinal.get());
+                } else {
+                    clientesFechamentosJuntos.add(clienteModelOptinal.get());
+                }
             }
-            if (clienteModelOptinal.get().isFechamentoSeparado()) {
-                clientesFechamentosSeparados.add(clienteModelOptinal.get());
-            } else {
-                clientesFechamentosJuntos.add(clienteModelOptinal.get());
-            }
-        }
 
+            //TODO: ajustar o fechamento por local
+            //Criar Fechamento por Local
+            for (ClienteModel clienteModel : clientesFechamentosSeparados) {
+                Optional<ContratoModel> contratoModelOptional = contratoService.findContratoModelByCliente(clienteModel);
+                if (!contratoModelOptional.isPresent()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Sem contrato existente para o cliente: " + clienteModel.getClienteNome());
+                }
+                List<LocalModel> listaLocais = localService.findAllByClienteClienteId(clienteModel.getClienteId());
+                for (LocalModel localModel : listaLocais) {
+                    FechamentoModel fechamentoModel = new FechamentoModel();
+                    fechamentoModel.setCliente(clienteModel);
+                    fechamentoModel.setLocal(localModel);
+                    fechamentoModel.setFechamentoInicio(fechamentoNovoDto.getFechamentoInicio());
+                    fechamentoModel.setFechamentoFinal(fechamentoNovoDto.getFechamentoFinal());
+                    fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+                    fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+                    fechamentoModel.setFechamentoStatus(FechamentoStatus.CRIADO);
+                    Set<VisitaModel> setVisitas = visitaService.setVisitasPorLocalEPeriodo(localModel.getLocalId(), fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
+                    fechamentoModel.setVisitas(setVisitas);
 
-        //Criar Fechamento por Local
-        for (ClienteModel clienteModel : clientesFechamentosSeparados) {
-            Optional<ContratoModel> contratoModelOptional = contratoService.findContratoModelByCliente(clienteModel);
-            if (!contratoModelOptional.isPresent()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Sem contrato existente para o cliente: "+clienteModel.getClienteNome());
+                    // valor produtos e valor serviços
+                    double totalHoras = 0.0;
+                    double totalHorasRemoto = 0.0;
+                    double totalProdutos = 0.0;
+                    for (VisitaModel visitaModel : setVisitas) {
+                        totalProdutos = totalProdutos + visitaModel.getVisitaValorProdutos();
+                        if (visitaModel.isVisitaRemoto()) {
+                            totalHorasRemoto = totalHorasRemoto + (visitaModel.getVisitaTotalHoras() - visitaModel.getVisitaTotalAbono());
+                        } else {
+                            totalHoras = totalHoras + (visitaModel.getVisitaTotalHoras() - visitaModel.getVisitaTotalAbono());
+                        }
+                    }
+                    fechamentoModel.setFechamentoValorProdutos(totalProdutos);
+                    fechamentoModel.setFechamentoValorServicos((totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
+                            (totalHoras * contratoModelOptional.get().getContratoValorVisita()));
+                    fechamentoService.save(fechamentoModel);
+
+                }
             }
-            List<LocalModel> listaLocais = localService.findAllByClienteClienteId(clienteModel.getClienteId());
-            for (LocalModel localModel : listaLocais) {
+
+            //Criar Fechamento por Cliente
+            for (ClienteModel clienteModel : clientesFechamentosJuntos) {
+                Optional<ContratoModel> contratoModelOptional = contratoService.findContratoModelByCliente(clienteModel);
+                if (!contratoModelOptional.isPresent()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Sem contrato existente para o cliente: " + clienteModel.getClienteNome());
+                }
+
                 FechamentoModel fechamentoModel = new FechamentoModel();
                 fechamentoModel.setCliente(clienteModel);
-                fechamentoModel.setLocal(localModel);
                 fechamentoModel.setFechamentoInicio(fechamentoNovoDto.getFechamentoInicio());
                 fechamentoModel.setFechamentoFinal(fechamentoNovoDto.getFechamentoFinal());
                 fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
                 fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
                 fechamentoModel.setFechamentoStatus(FechamentoStatus.CRIADO);
-                Set<VisitaModel> setVisitas = visitaService.setVisitasPorLocalEPeriodo(localModel.getLocalId(), fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
+
+                Set<VisitaModel> setVisitas = visitaService.listarVisitasPorClienteEPeriodoFechamento(clienteModel, fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
                 fechamentoModel.setVisitas(setVisitas);
 
                 // valor produtos e valor serviços
                 double totalHoras = 0.0;
                 double totalHorasRemoto = 0.0;
                 double totalProdutos = 0.0;
-                for(VisitaModel visitaModel : setVisitas){
+                for (VisitaModel visitaModel : setVisitas) {
                     totalProdutos = totalProdutos + visitaModel.getVisitaValorProdutos();
-                    if(visitaModel.isVisitaRemoto()) {
+                    if (visitaModel.isVisitaRemoto()) {
                         totalHorasRemoto = totalHorasRemoto + (visitaModel.getVisitaTotalHoras() - visitaModel.getVisitaTotalAbono());
                     } else {
                         totalHoras = totalHoras + (visitaModel.getVisitaTotalHoras() - visitaModel.getVisitaTotalAbono());
                     }
                 }
+
                 fechamentoModel.setFechamentoValorProdutos(totalProdutos);
-                fechamentoModel.setFechamentoValorServicos( (totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
-                        ( totalHoras * contratoModelOptional.get().getContratoValorVisita() )  );
+                fechamentoModel.setFechamentoValorServicos((totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
+                        (totalHoras * contratoModelOptional.get().getContratoValorVisita()));
                 fechamentoService.save(fechamentoModel);
-                try {
-                    Thread.sleep(1500);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                log.debug("Fechamento por local novo: {}", fechamentoModel.toString());
+
+                log.debug("Fechamento por cliente novo: {}", fechamentoModel.toString());
+
             }
+
+            return ResponseEntity.status(HttpStatus.OK).body("Fechamentos gerados com sucesso! ");
+        } catch (DataIntegrityViolationException e) {
+            log.error("Erro: de integridade: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro: Não foi possível salvar o fechamento devido a uma violação de integridade de dados. Por favor, verifique se o fechamento já foi criado ou se há dados duplicados.");
+        } catch (Exception e) {
+            log.error("Erro ao criar fechamento: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno: Ocorreu um erro ao criar o fechamento. Por favor, tente novamente.");
         }
-
-        //Criar Fechamento por Cliente
-        for (ClienteModel clienteModel : clientesFechamentosJuntos) {
-            Optional<ContratoModel> contratoModelOptional = contratoService.findContratoModelByCliente(clienteModel);
-            if (!contratoModelOptional.isPresent()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Sem contrato existente para o cliente: "+clienteModel.getClienteNome());
-            }
-
-            FechamentoModel fechamentoModel = new FechamentoModel();
-            fechamentoModel.setCliente(clienteModel);
-            fechamentoModel.setFechamentoInicio(fechamentoNovoDto.getFechamentoInicio());
-            fechamentoModel.setFechamentoFinal(fechamentoNovoDto.getFechamentoFinal());
-            fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-            fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-            fechamentoModel.setFechamentoStatus(FechamentoStatus.CRIADO);
-
-            Set<VisitaModel> setVisitas = visitaService.listarVisitasPorClienteEPeriodoFechamento(clienteModel, fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
-            fechamentoModel.setVisitas(setVisitas);
-
-            // valor produtos e valor serviços
-            double totalHoras = 0.0;
-            double totalHorasRemoto = 0.0;
-            double totalProdutos = 0.0;
-            for(VisitaModel visitaModel : setVisitas){
-                totalProdutos = totalProdutos + visitaModel.getVisitaValorProdutos();
-                if(visitaModel.isVisitaRemoto()) {
-                    totalHorasRemoto = totalHorasRemoto + (visitaModel.getVisitaTotalHoras() - visitaModel.getVisitaTotalAbono());
-                } else {
-                    totalHoras = totalHoras + (visitaModel.getVisitaTotalHoras() - visitaModel.getVisitaTotalAbono());
-                }
-            }
-
-            fechamentoModel.setFechamentoValorProdutos(totalProdutos);
-            fechamentoModel.setFechamentoValorServicos( (totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
-                    ( totalHoras * contratoModelOptional.get().getContratoValorVisita() )  );
-            fechamentoService.save(fechamentoModel);
-
-            log.debug("Fechamento por cliente novo: {}", fechamentoModel.toString());
-
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body("Fechamentos gerados com sucesso! ");
     }
 
 
