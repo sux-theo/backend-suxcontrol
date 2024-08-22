@@ -23,4 +23,22 @@ public interface FechamentoRepository extends JpaRepository<FechamentoModel, UUI
 
     @Query(value = "select * from tb_fechamentos where local_id= :localId and fechamento_inicio >= :fechamentoInicio AND fechamento_final <= :fechamentoFinal", nativeQuery = true)
     Optional<FechamentoModel> findFechamentoModelByLocalIdEPeriodo(UUID localId, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal);
+
+    @Query(value = "select * from tb_fechamentos where cliente_id= :clienteId and (fechamento_inicio >= :fechamentoInicio AND fechamento_inicio <= :fechamentoFinal)", nativeQuery = true)
+    Set<FechamentoModel> filtrarPorClienteInicioFim(UUID clienteId, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal);
+
+    @Query(value = "select * from tb_fechamentos where cliente_id= :clienteId and (fechamento_inicio = :fechamentoInicio)", nativeQuery = true)
+    Set<FechamentoModel> filtrarPorClienteInicio(UUID clienteId, LocalDateTime fechamentoInicio);
+
+    @Query(value = "select * from tb_fechamentos where (fechamento_inicio >= :fechamentoInicio AND fechamento_inicio <= :fechamentoFinal)", nativeQuery = true)
+    Set<FechamentoModel> filtrarPorInicioFim(LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal);
+
+    @Query(value = "select * from tb_fechamentos where (fechamento_inicio = :fechamentoInicio)", nativeQuery = true)
+    Set<FechamentoModel> filtrarPorInicio(LocalDateTime fechamentoInicio);
+
+    @Query(value = "select * from tb_fechamentos where (fechamento_final = :fechamentoFinal)", nativeQuery = true)
+    Set<FechamentoModel> filtrarPorFim(LocalDateTime fechamentoFinal);
+
+    @Query(value = "select * from tb_fechamentos where (cliente_id >= :clienteId)", nativeQuery = true)
+    Set<FechamentoModel> filtrarPorCliente(UUID clienteId);
 }

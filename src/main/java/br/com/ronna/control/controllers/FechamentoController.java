@@ -3,6 +3,7 @@ package br.com.ronna.control.controllers;
 import br.com.ronna.control.dtos.FechamentoDto;
 import br.com.ronna.control.dtos.FechamentoNovoDto;
 import br.com.ronna.control.dtos.FechamentoStatusDto;
+import br.com.ronna.control.dtos.FiltroFechamentoDto;
 import br.com.ronna.control.enums.FechamentoStatus;
 import br.com.ronna.control.models.*;
 import br.com.ronna.control.services.*;
@@ -205,6 +206,44 @@ public class FechamentoController {
         }
     }
 
+    @PostMapping("/filtro")
+    public ResponseEntity<Object> filtrarFechamentos(@RequestBody FiltroFechamentoDto filtroFechamentoDto) {
+        log.debug(filtroFechamentoDto);
+
+
+        // Verifica quais atributos foram fornecidos
+        boolean hasCliente = filtroFechamentoDto.getCliente() != null;
+        boolean hasInicio = filtroFechamentoDto.getInicio() != null;
+        boolean hasFim = filtroFechamentoDto.getFim() != null;
+
+        // Lógica para redirecionar para o serviço correto
+        if (hasCliente && hasInicio && hasFim) {
+            // Chama o serviço para filtrar por cliente, início e fim
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorClienteInicioFim(filtroFechamentoDto));
+        } else if (hasCliente && hasInicio) {
+            // Chama o serviço para filtrar por cliente e início
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorClienteInicio(filtroFechamentoDto));
+        } else if (hasCliente && hasFim) {
+            // Chama o serviço para filtrar por cliente e fim
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorClienteFim(filtroFechamentoDto));
+        } else if (hasInicio && hasFim) {
+            // Chama o serviço para filtrar por início e fim
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorInicioFim(filtroFechamentoDto));
+        } else if (hasCliente) {
+            // Chama o serviço para filtrar apenas por cliente
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorCliente(filtroFechamentoDto));
+        } else if (hasInicio) {
+            // Chama o serviço para filtrar apenas por início
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorInicio(filtroFechamentoDto));
+        } else if (hasFim) {
+            // Chama o serviço para filtrar apenas por fim
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorFim(filtroFechamentoDto));
+        } else {
+            // Caso nenhum filtro seja fornecido
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nenhum filtro fornecido.");
+        }
+
+    }
 
     @PostMapping("/novo")
     public ResponseEntity<Object> criarFechamento(@RequestBody FechamentoDto fechamentoDto) {
