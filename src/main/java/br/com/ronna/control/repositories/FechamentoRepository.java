@@ -25,20 +25,20 @@ public interface FechamentoRepository extends JpaRepository<FechamentoModel, UUI
     Optional<FechamentoModel> findFechamentoModelByLocalIdEPeriodo(UUID localId, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal);
 
     @Query(value = "select * from tb_fechamentos where cliente_id= :clienteId and (fechamento_inicio >= :fechamentoInicio AND fechamento_inicio <= :fechamentoFinal)", nativeQuery = true)
-    Set<FechamentoModel> filtrarPorClienteInicioFim(UUID clienteId, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal);
+    Page<FechamentoModel> filtrarPorClienteInicioFim(UUID clienteId, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal, Pageable pageable);
 
     @Query(value = "select * from tb_fechamentos where cliente_id= :clienteId and (fechamento_inicio = :fechamentoInicio)", nativeQuery = true)
-    Set<FechamentoModel> filtrarPorClienteInicio(UUID clienteId, LocalDateTime fechamentoInicio);
+    Page<FechamentoModel> filtrarPorClienteInicio(UUID clienteId, LocalDateTime fechamentoInicio, Pageable pageable);
 
     @Query(value = "select * from tb_fechamentos where (fechamento_inicio >= :fechamentoInicio AND fechamento_inicio <= :fechamentoFinal)", nativeQuery = true)
-    Set<FechamentoModel> filtrarPorInicioFim(LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal);
+    Page<FechamentoModel> filtrarPorInicioFim(LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal, Pageable pageable);
 
     @Query(value = "select * from tb_fechamentos where (fechamento_inicio = :fechamentoInicio)", nativeQuery = true)
-    Set<FechamentoModel> filtrarPorInicio(LocalDateTime fechamentoInicio);
+    Page<FechamentoModel> filtrarPorInicio(LocalDateTime fechamentoInicio, Pageable pageable);
 
     @Query(value = "select * from tb_fechamentos where (fechamento_final = :fechamentoFinal)", nativeQuery = true)
-    Set<FechamentoModel> filtrarPorFim(LocalDateTime fechamentoFinal);
+    Page<FechamentoModel> filtrarPorFim(LocalDateTime fechamentoFinal, Pageable pageable);
 
-    @Query(value = "select * from tb_fechamentos where (cliente_id >= :clienteId)", nativeQuery = true)
-    Set<FechamentoModel> filtrarPorCliente(UUID clienteId);
+    @Query(value = "select * from tb_fechamentos where (cliente_id = :clienteId)", nativeQuery = true)
+    Page<FechamentoModel> filtrarPorCliente(UUID clienteId, Pageable pageable);
 }

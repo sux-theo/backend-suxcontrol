@@ -57,38 +57,38 @@ public class FechamentoServiceImpl implements FechamentoService {
     }
 
     @Override
-    public Set<FechamentoModel> filtrarPorClienteInicioFim(FiltroFechamentoDto filtroFechamentoDto) {
-        return fechamentoRepository.filtrarPorClienteInicioFim(filtroFechamentoDto.getCliente(), filtroFechamentoDto.getInicio(), filtroFechamentoDto.getFim());
+    public Page<FechamentoModel> filtrarPorClienteInicioFim(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable) {
+        return fechamentoRepository.filtrarPorClienteInicioFim(filtroFechamentoDto.getCliente(), filtroFechamentoDto.getInicio(), filtroFechamentoDto.getFim(), pageable);
     }
 
     @Override
-    public Set<FechamentoModel> filtrarPorClienteInicio(FiltroFechamentoDto filtroFechamentoDto) {
-        return fechamentoRepository.filtrarPorClienteInicio(filtroFechamentoDto.getCliente(), filtroFechamentoDto.getInicio());
+    public Page<FechamentoModel> filtrarPorClienteInicio(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable) {
+        return fechamentoRepository.filtrarPorClienteInicio(filtroFechamentoDto.getCliente(), filtroFechamentoDto.getInicio(), pageable);
     }
 
     @Override
-    public Set<FechamentoModel> filtrarPorClienteFim(FiltroFechamentoDto filtroFechamentoDto) {
+    public Page<FechamentoModel> filtrarPorClienteFim(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable) {
         //TODO: não implementado!
-        return fechamentoRepository.filtrarPorClienteInicio(filtroFechamentoDto.getCliente(), filtroFechamentoDto.getInicio());
+        return fechamentoRepository.filtrarPorClienteInicio(filtroFechamentoDto.getCliente(), filtroFechamentoDto.getInicio(), pageable);
     }
 
     @Override
-    public Set<FechamentoModel> filtrarPorInicioFim(FiltroFechamentoDto filtroFechamentoDto) {
-        return fechamentoRepository.filtrarPorInicioFim(filtroFechamentoDto.getInicio(), filtroFechamentoDto.getFim());
+    public Page<FechamentoModel> filtrarPorInicioFim(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable) {
+        return fechamentoRepository.filtrarPorInicioFim(filtroFechamentoDto.getInicio(), filtroFechamentoDto.getFim(), pageable);
     }
 
     @Override
-    public Set<FechamentoModel> filtrarPorCliente(FiltroFechamentoDto filtroFechamentoDto) {
-        return fechamentoRepository.filtrarPorCliente(filtroFechamentoDto.getCliente());
+    public Page<FechamentoModel> filtrarPorCliente(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable) {
+        return fechamentoRepository.filtrarPorCliente(filtroFechamentoDto.getCliente(), pageable);
     }
 
     @Override
-    public Set<FechamentoModel> filtrarPorInicio(FiltroFechamentoDto filtroFechamentoDto) {
-        return fechamentoRepository.filtrarPorInicio(filtroFechamentoDto.getInicio());
+    public Page<FechamentoModel> filtrarPorInicio(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable) {
+        return fechamentoRepository.filtrarPorInicio(filtroFechamentoDto.getInicio(), pageable);
     }
 
     @Override
-    public Set<FechamentoModel> filtrarPorFim(FiltroFechamentoDto filtroFechamentoDto) {
-        return fechamentoRepository.filtrarPorFim(filtroFechamentoDto.getFim());
+    public Page<FechamentoModel> filtrarPorFim(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable) {
+        return fechamentoRepository.filtrarPorFim(filtroFechamentoDto.getFim(), pageable);
     }
 }

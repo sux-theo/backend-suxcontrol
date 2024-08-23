@@ -27,17 +27,17 @@ public interface FechamentoService {
 
     Optional<FechamentoModel> findFechamentoModelByLocalIdEPeriodo(UUID clienteLocalId, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal);
 
-    Set<FechamentoModel> filtrarPorClienteInicioFim(FiltroFechamentoDto filtroFechamentoDto);
+    Page<FechamentoModel> filtrarPorClienteInicioFim(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable);
 
-    Set<FechamentoModel> filtrarPorClienteInicio(FiltroFechamentoDto filtroFechamentoDto);
+    Page<FechamentoModel> filtrarPorClienteInicio(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable);
 
-    Set<FechamentoModel> filtrarPorClienteFim(FiltroFechamentoDto filtroFechamentoDto);
+    Page<FechamentoModel> filtrarPorClienteFim(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable);
 
-    Set<FechamentoModel> filtrarPorInicioFim(FiltroFechamentoDto filtroFechamentoDto);
+    Page<FechamentoModel> filtrarPorInicioFim(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable);
 
-    Set<FechamentoModel> filtrarPorCliente(FiltroFechamentoDto filtroFechamentoDto);
+    Page<FechamentoModel> filtrarPorCliente(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable);
 
-    Set<FechamentoModel> filtrarPorInicio(FiltroFechamentoDto filtroFechamentoDto);
+    Page<FechamentoModel> filtrarPorInicio(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable);
 
-    Set<FechamentoModel> filtrarPorFim(FiltroFechamentoDto filtroFechamentoDto);
+    Page<FechamentoModel> filtrarPorFim(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable);
 }

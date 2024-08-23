@@ -71,7 +71,7 @@ public class FechamentoController {
 
     @GetMapping("/local/{clienteLocalId}")
     public ResponseEntity<Object> listarFechamentosClienteLocal(@PathVariable(value = "clienteLocalId")UUID clienteLocalId,
-                                                                @PageableDefault(page = 0, size = 100, sort = "fechamentoIncio", direction = Sort.Direction.ASC)Pageable pageable) {
+                                                                @PageableDefault(page = 0, size = 100, sort = "fechamentoInicio", direction = Sort.Direction.ASC)Pageable pageable) {
         var localModelOptional = localService.findById(clienteLocalId);
         if(!localModelOptional.isPresent()) {
             log.info("Local do cliente {} não encontrado!", clienteLocalId);
@@ -207,7 +207,8 @@ public class FechamentoController {
     }
 
     @PostMapping("/filtro")
-    public ResponseEntity<Object> filtrarFechamentos(@RequestBody FiltroFechamentoDto filtroFechamentoDto) {
+    public ResponseEntity<Object> filtrarFechamentos(@RequestBody FiltroFechamentoDto filtroFechamentoDto,
+                                                     @PageableDefault(page = 0, size = 50 )Pageable pageable) {
         log.debug(filtroFechamentoDto);
 
 
@@ -219,25 +220,25 @@ public class FechamentoController {
         // Lógica para redirecionar para o serviço correto
         if (hasCliente && hasInicio && hasFim) {
             // Chama o serviço para filtrar por cliente, início e fim
-            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorClienteInicioFim(filtroFechamentoDto));
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorClienteInicioFim(filtroFechamentoDto, pageable));
         } else if (hasCliente && hasInicio) {
             // Chama o serviço para filtrar por cliente e início
-            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorClienteInicio(filtroFechamentoDto));
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorClienteInicio(filtroFechamentoDto, pageable));
         } else if (hasCliente && hasFim) {
             // Chama o serviço para filtrar por cliente e fim
-            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorClienteFim(filtroFechamentoDto));
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorClienteFim(filtroFechamentoDto, pageable));
         } else if (hasInicio && hasFim) {
             // Chama o serviço para filtrar por início e fim
-            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorInicioFim(filtroFechamentoDto));
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorInicioFim(filtroFechamentoDto, pageable));
         } else if (hasCliente) {
             // Chama o serviço para filtrar apenas por cliente
-            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorCliente(filtroFechamentoDto));
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorCliente(filtroFechamentoDto, pageable));
         } else if (hasInicio) {
             // Chama o serviço para filtrar apenas por início
-            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorInicio(filtroFechamentoDto));
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorInicio(filtroFechamentoDto, pageable));
         } else if (hasFim) {
             // Chama o serviço para filtrar apenas por fim
-            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorFim(filtroFechamentoDto));
+            return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorFim(filtroFechamentoDto, pageable));
         } else {
             // Caso nenhum filtro seja fornecido
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nenhum filtro fornecido.");
