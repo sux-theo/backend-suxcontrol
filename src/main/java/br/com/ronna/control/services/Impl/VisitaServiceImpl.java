@@ -1,5 +1,6 @@
 package br.com.ronna.control.services.Impl;
 
+import br.com.ronna.control.dtos.FiltroVisitaDto;
 import br.com.ronna.control.models.ClienteModel;
 import br.com.ronna.control.models.FuncionarioModel;
 import br.com.ronna.control.models.LocalModel;
@@ -51,6 +52,22 @@ public class VisitaServiceImpl implements VisitaService {
     @Override
     public Set<VisitaModel> setVisitasPorLocalEPeriodo(UUID localId, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal) {
         return visitaRepository.listarVisitasPorClienteLocalEPeriodoFechamento(localId, fechamentoInicio, fechamentoFinal);
+    }
+
+    @Override
+    public Page<VisitaModel> filtrarVisitaClienteFuncionarioEPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable) {
+        return visitaRepository.filtrarVisitaClienteFuncionarioEPeriodo(filtroVisitaDto.getCliente(), filtroVisitaDto.getFuncionario(),
+                filtroVisitaDto.getVisitaInicio(), filtroVisitaDto.getVisitaFinal(), pageable);
+    }
+
+    @Override
+    public Page<VisitaModel> filtrarVisitaClienteEPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable) {
+        return visitaRepository.filtrarVisitaClienteEPeriodo(filtroVisitaDto.getCliente(), filtroVisitaDto.getVisitaInicio(), filtroVisitaDto.getVisitaFinal(), pageable);
+    }
+
+    @Override
+    public Page<VisitaModel> filtrarVisitaPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable) {
+        return visitaRepository.filtrarVisitaPeriodo(filtroVisitaDto.getVisitaInicio(), filtroVisitaDto.getVisitaFinal(), pageable);
     }
 
     @Override

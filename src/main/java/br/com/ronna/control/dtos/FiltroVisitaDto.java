@@ -11,4 +11,8 @@ public class FiltroVisitaDto {
     private LocalDateTime visitaInicio;
 
     private LocalDateTime visitaFinal;
+
+    private UUID cliente;
+
+    private UUID funcionario;
 }

@@ -35,4 +35,33 @@ public interface VisitaRepository extends JpaRepository<VisitaModel, UUID>, JpaS
                                                                                                        LocalDateTime visitaFinal,LocalDateTime visitaInicio,
                                                                                                        Pageable pageable);
 
+    @Query(value = "SELECT v.* FROM tb_visitas v " +
+            "JOIN tb_visitas_funcionarios vf ON v.visita_id = vf.visita_model_visita_id " +
+            "JOIN tb_funcionarios f ON vf.funcionarios_funcionario_id = f.funcionario_id " +
+            "WHERE v.cliente_id = :clienteId " +
+            "AND f.funcionario_id = :funcionarioId " +
+            "AND v.visita_inicio BETWEEN :inicio AND :fim",
+            nativeQuery = true)
+    Page<VisitaModel> filtrarVisitaClienteFuncionarioEPeriodo(@Param("clienteId") UUID clienteId,
+                                                              @Param("funcionarioId") UUID funcionarioId,
+                                                              @Param("inicio") LocalDateTime inicio,
+                                                              @Param("fim") LocalDateTime fim, Pageable pageable);
+
+    @Query(value = "SELECT * FROM tb_visitas v " +
+            "WHERE v.cliente_id = :clienteId " +
+            "AND v.visita_inicio BETWEEN :inicio AND :fim",
+            countQuery = "SELECT count(*) FROM tb_visitas v " +
+                    "WHERE v.cliente_id = :clienteId " +
+                    "AND v.visita_inicio BETWEEN :inicio AND :fim",
+            nativeQuery = true)
+    Page<VisitaModel> filtrarVisitaClienteEPeriodo(@Param("clienteId") UUID clienteId,
+                                                   @Param("inicio") LocalDateTime inicio,
+                                                   @Param("fim") LocalDateTime fim,
+                                                   Pageable pageable);
+
+
+    @Query(value = "SELECT * FROM tb_visitas WHERE visita_inicio BETWEEN :inicio AND :fim", nativeQuery = true)
+    Page<VisitaModel> filtrarVisitaPeriodo(LocalDateTime inicio, LocalDateTime fim, Pageable pageable);
+
+
 }

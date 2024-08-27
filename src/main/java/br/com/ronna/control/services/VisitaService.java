@@ -1,5 +1,6 @@
 package br.com.ronna.control.services;
 
+import br.com.ronna.control.dtos.FiltroVisitaDto;
 import br.com.ronna.control.models.ClienteModel;
 import br.com.ronna.control.models.FuncionarioModel;
 import br.com.ronna.control.models.LocalModel;
@@ -33,4 +34,10 @@ public interface VisitaService {
     Set<VisitaModel> listarVisitasPorClienteEPeriodoFechamento(ClienteModel clienteModel, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal);
 
     Set<VisitaModel> setVisitasPorLocalEPeriodo(UUID localId, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal);
+
+    Page<VisitaModel> filtrarVisitaClienteFuncionarioEPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable);
+
+    Page<VisitaModel> filtrarVisitaClienteEPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable);
+
+    Page<VisitaModel> filtrarVisitaPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable);
 }
