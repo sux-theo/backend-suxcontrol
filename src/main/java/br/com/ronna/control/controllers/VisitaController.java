@@ -48,7 +48,7 @@ public class VisitaController {
     private LocalService localService;
 
     @GetMapping
-    public ResponseEntity<Page<VisitaModel>> listaTodasVisitas(@PageableDefault(page = 0, size = 100, sort = "visitaInicio", direction = Sort.Direction.ASC)Pageable pageable) {
+    public ResponseEntity<Page<VisitaModel>> listaTodasVisitas(@PageableDefault(page = 0, size = 50, sort = "visitaInicio", direction = Sort.Direction.ASC)Pageable pageable) {
         log.debug("Listando todas as visitas...");
 
         Page<VisitaModel> visitaModelPage = visitaService.findAll(pageable);
@@ -68,7 +68,7 @@ public class VisitaController {
 
     @PostMapping("/funcionario/{funcionarioId}")
     public ResponseEntity<Object> buscaVisitaFuncionario(@PathVariable (value = "funcionarioId")UUID funcionarioId,
-                                                         @PageableDefault(page = 0, size = 100, sort = "visitaInicio", direction = Sort.Direction.ASC)Pageable pageable
+                                                         @PageableDefault(page = 0, size = 50, sort = "visitaInicio", direction = Sort.Direction.ASC)Pageable pageable
                                                          ,@RequestBody FiltroVisitaDto fitlroVisitaDto){
         var funcionarioModelOptional = funcionarioService.findById(funcionarioId);
         if(!funcionarioModelOptional.isPresent()) {
@@ -81,7 +81,7 @@ public class VisitaController {
 
     @GetMapping("/cliente/{clienteId}")
     public ResponseEntity<Object> listarVisitasPorClienteEPeriodo(@PathVariable (value = "clienteId") UUID clienteId, @RequestBody PeriodoDto periodoDto,
-                                                                  @PageableDefault(page = 0, size = 100, sort = "visitaInicio", direction = Sort.Direction.ASC) Pageable pageable) {
+                                                                  @PageableDefault(page = 0, size = 50, sort = "visitaInicio", direction = Sort.Direction.ASC) Pageable pageable) {
 
         var clienteModelOptional = clienteService.findById(clienteId);
         if(!clienteModelOptional.isPresent()){
@@ -190,6 +190,36 @@ public class VisitaController {
 
         visitaService.save(visitaModelOptional.get());
         return ResponseEntity.status(HttpStatus.CREATED).body(visitaModelOptional.get());
+    }
+
+    @PostMapping("/filtro")
+    public ResponseEntity<Object> getVisitasFiltradas(@RequestBody FiltroVisitaDto filtroVisitaDto,
+                                                      @PageableDefault(page = 0, size = 50, sort = "visita_inicio", direction = Sort.Direction.ASC) Pageable pageable){
+
+        boolean hasCliente = filtroVisitaDto.getCliente() != null;
+        boolean hasFuncionario = filtroVisitaDto.getFuncionario() != null;
+        boolean hasInicio = filtroVisitaDto.getVisitaInicio() != null;
+        boolean hasFinal = filtroVisitaDto.getVisitaFinal() != null;
+
+        log.debug("Teste recebimento....");
+        log.debug(pageable);
+        log.debug(filtroVisitaDto);
+
+        if (hasCliente && hasFuncionario && hasInicio && hasFinal) {
+            log.debug("Entrou filtro cliente, funcionario e periodo");
+            return ResponseEntity.status(HttpStatus.OK).body(visitaService.filtrarVisitaClienteFuncionarioEPeriodo(filtroVisitaDto, pageable));
+        }
+        if(hasCliente && hasInicio && hasFinal){
+            log.debug("Entrou filtro cliente e periodo");
+            return ResponseEntity.status(HttpStatus.OK).body(visitaService.filtrarVisitaClienteEPeriodo(filtroVisitaDto, pageable));
+        }
+        if (hasInicio && hasFinal) {
+            log.debug("Entrou filtro periodo");
+            return ResponseEntity.status(HttpStatus.OK).body(visitaService.filtrarVisitaPeriodo(filtroVisitaDto, pageable));
+        }
+
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro com o filtro, preencha mais valores e tente novamente.");
     }
 
     // TODO: Mapeamento de endpoint para o fechamento. (Verificar)

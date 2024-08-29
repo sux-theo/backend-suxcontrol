@@ -100,6 +100,8 @@ public class FechamentoController {
     public ResponseEntity<Object> novoFechamento(@RequestBody FechamentoNovoDto fechamentoNovoDto) {
         log.debug(fechamentoNovoDto.toString());
 
+        // Verificar
+
         try {
             Set<ClienteModel> clientesFechamentosSeparados = new HashSet<>();
             Set<ClienteModel> clientesFechamentosJuntos = new HashSet<>();
