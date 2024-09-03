@@ -71,6 +71,11 @@ public class VisitaServiceImpl implements VisitaService {
     }
 
     @Override
+    public Page<VisitaModel> filtrarVisitaFuncionarioEPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable) {
+        return visitaRepository.filtrarVisitaFuncionarioEPeriodo(filtroVisitaDto.getFuncionario(), filtroVisitaDto.getVisitaInicio(), filtroVisitaDto.getVisitaFinal(), pageable);
+    }
+
+    @Override
     public Page<VisitaModel> findAll(Pageable pageable) {
         return visitaRepository.findAll(pageable);
     }

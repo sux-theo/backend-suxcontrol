@@ -97,6 +97,8 @@ public class VisitaController {
     @PostMapping("/novo")
     public ResponseEntity<Object> criarVisita(@RequestBody VisitaDto visitaDto) {
         var visitaModel = new VisitaModel();
+        log.debug("Criação de nova visita...");
+        log.debug("Visita: {}", visitaDto);
 
         // Ajusta o Horário recebido do navegador para o GMT-3
         // visitaModel.setVisitaInicio(visitaDto.getVisitaInicio().minusHours(3));
@@ -114,6 +116,7 @@ public class VisitaController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Cliente não encontrado!");
         }
         visitaModel.setCliente(clienteModelOptional.get());
+        log.debug(visitaDto.getLocal());
         if(visitaDto.getLocal() != null){
             log.debug("Visita com local diferente de nulo!");
             var localModelOptional = localService.findById(visitaDto.getLocal());
@@ -212,6 +215,10 @@ public class VisitaController {
         if(hasCliente && hasInicio && hasFinal){
             log.debug("Entrou filtro cliente e periodo");
             return ResponseEntity.status(HttpStatus.OK).body(visitaService.filtrarVisitaClienteEPeriodo(filtroVisitaDto, pageable));
+        }
+        if(hasFuncionario && hasInicio && hasFinal){
+            log.debug("Entrou filtro cliente e periodo");
+            return ResponseEntity.status(HttpStatus.OK).body(visitaService.filtrarVisitaFuncionarioEPeriodo(filtroVisitaDto, pageable));
         }
         if (hasInicio && hasFinal) {
             log.debug("Entrou filtro periodo");

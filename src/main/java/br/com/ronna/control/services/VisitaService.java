@@ -40,4 +40,6 @@ public interface VisitaService {
     Page<VisitaModel> filtrarVisitaClienteEPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable);
 
     Page<VisitaModel> filtrarVisitaPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable);
+
+    Page<VisitaModel> filtrarVisitaFuncionarioEPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable);
 }

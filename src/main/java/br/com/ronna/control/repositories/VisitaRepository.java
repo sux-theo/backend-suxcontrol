@@ -64,4 +64,17 @@ public interface VisitaRepository extends JpaRepository<VisitaModel, UUID>, JpaS
     Page<VisitaModel> filtrarVisitaPeriodo(LocalDateTime inicio, LocalDateTime fim, Pageable pageable);
 
 
+
+    @Query(value = "SELECT v.* FROM tb_visitas v " +
+            "JOIN tb_visitas_funcionarios vf ON v.visita_id = vf.visita_model_visita_id " +
+            "WHERE vf.funcionarios_funcionario_id = :funcionarioId " +
+            "AND v.visita_inicio >= :visitaInicio " +
+            "AND v.visita_final <= :visitaFinal",
+            countQuery = "SELECT count(*) FROM tb_visitas v " +
+                    "JOIN tb_visitas_funcionarios vf ON v.visita_id = vf.visita_model_visita_id " +
+                    "WHERE vf.funcionarios_funcionario_id = :funcionarioId " +
+                    "AND v.visita_inicio >= :visitaInicio " +
+                    "AND v.visita_final <= :visitaFinal",
+            nativeQuery = true)
+    Page<VisitaModel> filtrarVisitaFuncionarioEPeriodo(UUID funcionarioId, LocalDateTime visitaInicio, LocalDateTime visitaFinal, Pageable pageable);
 }
