@@ -390,9 +390,9 @@ public class FechamentoController {
             valorRemoto = contratoModelOptional.get().getContratoValorRemoto();
             valorVisita = contratoModelOptional.get().getContratoValorVisita();
             Set<VisitaModel> visitaModels = visitaService.listarVisitasPorClienteEPeriodoFechamento(clienteModelOptional.get(), fechamentoDto.getFechamentoInicio(), fechamentoDto.getFechamentoFinal());
-            if(visitaModels.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro: Não existem visitas para este cliente no período selecionado!");
-            }
+            // if(visitaModels.isEmpty()) {
+            //     return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro: Não existem visitas para este cliente no período selecionado!");
+            // }
             //Somar os valores de produtos totais e total de horas das visitas. salvar valor final pelo valor cadastrado em contrato.
             for(VisitaModel visitaModel : visitaModels){
                 totalProdutos = totalProdutos + visitaModel.getVisitaValorProdutos();
