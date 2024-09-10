@@ -76,6 +76,11 @@ public class VisitaServiceImpl implements VisitaService {
     }
 
     @Override
+    public void delete(VisitaModel visitaModel) {
+        visitaRepository.delete(visitaModel);
+    }
+
+    @Override
     public Page<VisitaModel> findAll(Pageable pageable) {
         return visitaRepository.findAll(pageable);
     }

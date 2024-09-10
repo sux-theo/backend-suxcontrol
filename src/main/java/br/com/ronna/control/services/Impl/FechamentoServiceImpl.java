@@ -3,6 +3,7 @@ package br.com.ronna.control.services.Impl;
 import br.com.ronna.control.dtos.FiltroFechamentoDto;
 import br.com.ronna.control.models.ClienteModel;
 import br.com.ronna.control.models.FechamentoModel;
+import br.com.ronna.control.models.VisitaModel;
 import br.com.ronna.control.repositories.FechamentoRepository;
 import br.com.ronna.control.services.FechamentoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,5 +91,10 @@ public class FechamentoServiceImpl implements FechamentoService {
     @Override
     public Page<FechamentoModel> filtrarPorFim(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable) {
         return fechamentoRepository.filtrarPorFim(filtroFechamentoDto.getFim(), pageable);
+    }
+
+    @Override
+    public Optional<FechamentoModel> findFechamentoModelByVisita(VisitaModel visitaModel) {
+        return fechamentoRepository.findFechamentoModelByVisitas(visitaModel);
     }
 }

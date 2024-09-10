@@ -3,12 +3,10 @@ package br.com.ronna.control.controllers;
 import br.com.ronna.control.dtos.FiltroVisitaDto;
 import br.com.ronna.control.dtos.PeriodoDto;
 import br.com.ronna.control.dtos.VisitaDto;
+import br.com.ronna.control.models.FechamentoModel;
 import br.com.ronna.control.models.FuncionarioModel;
 import br.com.ronna.control.models.VisitaModel;
-import br.com.ronna.control.services.ClienteService;
-import br.com.ronna.control.services.FuncionarioService;
-import br.com.ronna.control.services.LocalService;
-import br.com.ronna.control.services.VisitaService;
+import br.com.ronna.control.services.*;
 import br.com.ronna.control.utils.CalculoHoras;
 import lombok.extern.log4j.Log4j2;
 import lombok.var;
@@ -24,9 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @RestController
@@ -46,6 +42,9 @@ public class VisitaController {
 
     @Autowired
     private LocalService localService;
+
+    @Autowired
+    private FechamentoService fechamentoService;
 
     @GetMapping
     public ResponseEntity<Page<VisitaModel>> listaTodasVisitas(@PageableDefault(page = 0, size = 50, sort = "visitaInicio", direction = Sort.Direction.ASC)Pageable pageable) {
@@ -242,6 +241,25 @@ public class VisitaController {
 
         Page<VisitaModel> visitaModelPage = visitaService.listarVisitasPorClienteLocalEPeriodo(clienteLocalId, periodoDto.getPeriodoInicio(), periodoDto.getPeriodoFinal(), pageable);
         return ResponseEntity.status(HttpStatus.OK).body(visitaModelPage);
+    }
+
+    @DeleteMapping("/delete/{visitaId}")
+    public ResponseEntity<Object> deleteVisita(@PathVariable (value = "visitaId") UUID visitaId) {
+        log.debug("deletando visita " + visitaId);
+        Optional<VisitaModel> visitaModelOptional = visitaService.findById(visitaId);
+        if(!visitaModelOptional.isPresent()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: visita não encontrada!");
+        }
+
+        Optional<FechamentoModel> fechamentoModelOptional = fechamentoService.findFechamentoModelByVisita(visitaModelOptional.get());
+        if(fechamentoModelOptional.isPresent()){
+            fechamentoModelOptional.get().getVisitas().remove(visitaModelOptional.get());
+            fechamentoService.save(fechamentoModelOptional.get());
+            log.debug("deletando visita " + visitaId);
+        }
+
+        visitaService.delete(visitaModelOptional.get());
+        return ResponseEntity.status(HttpStatus.OK).body("Visita deletado com sucesso!");
     }
 
 }

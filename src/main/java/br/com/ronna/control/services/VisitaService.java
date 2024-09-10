@@ -42,4 +42,6 @@ public interface VisitaService {
     Page<VisitaModel> filtrarVisitaPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable);
 
     Page<VisitaModel> filtrarVisitaFuncionarioEPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable);
+
+    void delete(VisitaModel visitaModel);
 }

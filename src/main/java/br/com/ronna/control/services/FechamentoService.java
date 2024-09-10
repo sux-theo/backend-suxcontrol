@@ -3,6 +3,7 @@ package br.com.ronna.control.services;
 import br.com.ronna.control.dtos.FiltroFechamentoDto;
 import br.com.ronna.control.models.ClienteModel;
 import br.com.ronna.control.models.FechamentoModel;
+import br.com.ronna.control.models.VisitaModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -40,4 +41,6 @@ public interface FechamentoService {
     Page<FechamentoModel> filtrarPorInicio(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable);
 
     Page<FechamentoModel> filtrarPorFim(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable);
+
+    Optional<FechamentoModel> findFechamentoModelByVisita(VisitaModel visitaModel);
 }

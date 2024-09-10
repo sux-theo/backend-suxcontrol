@@ -41,4 +41,7 @@ public interface FechamentoRepository extends JpaRepository<FechamentoModel, UUI
 
     @Query(value = "select * from tb_fechamentos where (cliente_id = :clienteId)", nativeQuery = true)
     Page<FechamentoModel> filtrarPorCliente(UUID clienteId, Pageable pageable);
+
+    // @Query(value = "select * from tb_fechamentos_visitas where visitas_visita_id = :visitaId", nativeQuery = true)
+    Optional<FechamentoModel> findFechamentoModelByVisitas(VisitaModel visitaModel);
 }
