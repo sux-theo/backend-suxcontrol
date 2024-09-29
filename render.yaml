@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: suxcontrol
+    env: java
+    plan: free
+    region: oregon
+    buildCommand: "./mvnw clean install"
+    startCommand: "java -jar target/suxcontrol.jar"

@@ -19,7 +19,7 @@ public class ContratoModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(columnDefinition = "varbinary(36)")
+    @Column(columnDefinition = "UUID")
     private UUID contratoId;
 
     @Column(nullable = false)
