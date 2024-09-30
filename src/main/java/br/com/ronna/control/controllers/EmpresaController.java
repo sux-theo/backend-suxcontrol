@@ -38,7 +38,8 @@ public class EmpresaController {
         //List<EmpresaModel> listaEmpresas = empresaService.findAll();
 
         Page<EmpresaModel> empresaModelPage = empresaService.findAll(pageable);
-
+        log.info("Empresa...");
+        log.info(empresaModelPage.toString());
         return ResponseEntity.status(HttpStatus.OK).body(empresaModelPage);
     }
 
