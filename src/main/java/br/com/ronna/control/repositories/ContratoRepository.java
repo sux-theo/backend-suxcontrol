@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ContratoRepository extends JpaRepository<ContratoModel, UUID>, JpaSpecificationExecutor<ContratoModel> {
@@ -26,4 +27,6 @@ public interface ContratoRepository extends JpaRepository<ContratoModel, UUID>, 
     @Query(value = "select case when exists (select 1 from tb_contratos where cliente_cliente_id = :clienteId and contrato_id = :contratoId) " +
                    "then 'true' else 'false' end", nativeQuery = true)
     boolean findByContratoIdAndCliente(@Param("contratoId") UUID contratoId, @Param("clienteId") UUID clienteId);
+
+    Optional<ContratoModel> findContratoModelByCliente(ClienteModel cliente);
 }

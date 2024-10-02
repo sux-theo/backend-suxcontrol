@@ -17,7 +17,7 @@ public class AtivoModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(columnDefinition = "varbinary(36)")
+    @Column(columnDefinition = "UUID")
     private UUID ativoId;
 
     @Column(nullable = false)

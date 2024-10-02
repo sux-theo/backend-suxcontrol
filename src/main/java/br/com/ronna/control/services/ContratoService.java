@@ -24,4 +24,6 @@ public interface ContratoService {
     Boolean existsContratoModelByCliente(ClienteModel clienteId);
 
     boolean findByIdAndCliente(UUID contratoId, UUID clienteId);
+
+    Optional<ContratoModel> findContratoModelByCliente(ClienteModel cliente);
 }
