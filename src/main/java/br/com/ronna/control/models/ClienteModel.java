@@ -20,7 +20,7 @@ public class ClienteModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(columnDefinition = "varbinary(36)")
+    @Column(columnDefinition = "UUID")
     private UUID clienteId;
 
     @Column(nullable = false)

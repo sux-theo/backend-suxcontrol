@@ -22,7 +22,7 @@ public class LocalModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(columnDefinition = "varbinary(36)")
+    @Column(columnDefinition = "UUID")
     private UUID localId;
 
     @Column(nullable = false)

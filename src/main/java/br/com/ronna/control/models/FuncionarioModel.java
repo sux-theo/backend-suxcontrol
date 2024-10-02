@@ -20,7 +20,7 @@ public class FuncionarioModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(columnDefinition = "varbinary(36)")
+    @Column(columnDefinition = "UUID")
     private UUID funcionarioId;
 
     @Column(nullable = false)

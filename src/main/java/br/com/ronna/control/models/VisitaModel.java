@@ -19,7 +19,7 @@ public class VisitaModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(columnDefinition = "varbinary(36)")
+    @Column(columnDefinition = "UUID")
     private UUID visitaId;
 
     @Column(nullable = false)

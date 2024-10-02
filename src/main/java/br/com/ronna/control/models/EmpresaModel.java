@@ -24,7 +24,7 @@ public class EmpresaModel implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(columnDefinition = "varbinary(36)")
+    @Column(columnDefinition = "UUID")
     private UUID empresaId;
 
     @Column(nullable = false)

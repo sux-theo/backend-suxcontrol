@@ -21,7 +21,7 @@ import java.util.UUID;
 public class FechamentoModel {
     
     @Id
-    @Column(columnDefinition = "varbinary(36)")
+    @Column(columnDefinition = "UUID")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID fechamentoId;
 
