@@ -153,6 +153,13 @@ public class FechamentoController {
                     fechamentoModel.setFechamentoValorProdutos(totalProdutos);
                     fechamentoModel.setFechamentoValorServicos((totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
                             (totalHoras * contratoModelOptional.get().getContratoValorVisita()));
+
+                    Optional<FechamentoModel> fechamentoModelOptionalExistente = fechamentoService.findFechamentoModelByLocalIdEPeriodo(localModel.getLocalId(), fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
+                    if (fechamentoModelOptionalExistente.isPresent()) {
+                        fechamentoModel.setFechamentoId(fechamentoModelOptionalExistente.get().getFechamentoId());
+                        fechamentoService.delete(fechamentoModelOptionalExistente.get());
+                    }
+
                     fechamentoService.save(fechamentoModel);
 
                 }
@@ -192,6 +199,11 @@ public class FechamentoController {
                 fechamentoModel.setFechamentoValorProdutos(totalProdutos);
                 fechamentoModel.setFechamentoValorServicos((totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
                         (totalHoras * contratoModelOptional.get().getContratoValorVisita()));
+                Optional<FechamentoModel> fechamentoModelOptionalExistente = fechamentoService.findFechamentoModelByLocalIdEPeriodo(localModel.getLocalId(), fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
+                if (fechamentoModelOptionalExistente.isPresent()) {
+                    fechamentoModel.setFechamentoId(fechamentoModelOptionalExistente.get().getFechamentoId());
+                    fechamentoService.delete(fechamentoModelOptionalExistente.get());
+                }
                 fechamentoService.save(fechamentoModel);
 
                 log.debug("Fechamento por cliente novo: {}", fechamentoModel.toString());
