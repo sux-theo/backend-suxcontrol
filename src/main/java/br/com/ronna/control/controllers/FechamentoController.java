@@ -210,7 +210,7 @@ public class FechamentoController {
 
     @PostMapping("/filtro")
     public ResponseEntity<Object> filtrarFechamentos(@RequestBody FiltroFechamentoDto filtroFechamentoDto,
-                                                     @PageableDefault(page = 0, size = 50 )Pageable pageable) {
+                                                     @PageableDefault(page = 0, size = 50, sort = "fechamento_inicio", direction = Sort.Direction.ASC )Pageable pageable) {
         log.debug(filtroFechamentoDto);
 
 
