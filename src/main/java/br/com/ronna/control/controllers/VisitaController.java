@@ -74,7 +74,8 @@ public class VisitaController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Funcionario selecionado não encontrado!");
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(visitaService.findByFuncionarioIdAndPeriodo(funcionarioModelOptional.get(), fitlroVisitaDto.getVisitaInicio(), fitlroVisitaDto.getVisitaFinal(),pageable));
+        return ResponseEntity.status(HttpStatus.OK).body(visitaService.findByFuncionarioIdAndPeriodo(funcionarioModelOptional.get(), fitlroVisitaDto.getVisitaInicio(),
+                fitlroVisitaDto.getVisitaFinal(),pageable));
         //return ResponseEntity.status(HttpStatus.OK).body(visitaService.findByFuncionarioId(funcionarioModelOptional.get(), pageable));
     }
 
@@ -140,8 +141,8 @@ public class VisitaController {
         }
         visitaModel.setVisitaRemoto(visitaDto.isVisitaRemoto());
         visitaModel.setFuncionarios(funcTemp);
-        visitaModel.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-        visitaModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        visitaModel.setCreatedDate(LocalDateTime.now(ZoneId.of("UTC")));
+        visitaModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
 
         CalculoHoras calculoHoras = new CalculoHoras();
 
@@ -185,7 +186,7 @@ public class VisitaController {
 
         visitaModelOptional.get().setVisitaRemoto(visitaDto.isVisitaRemoto());
 
-        visitaModelOptional.get().setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        visitaModelOptional.get().setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
 
         CalculoHoras calculoHoras = new CalculoHoras();
         visitaModelOptional.get().setVisitaTotalHoras(calculoHoras.diferencaInicioFim(visitaModelOptional.get().getVisitaInicio(), visitaModelOptional.get().getVisitaFinal()));

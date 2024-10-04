@@ -1,9 +1,6 @@
 package br.com.ronna.control.controllers;
 
-import br.com.ronna.control.dtos.FechamentoDto;
-import br.com.ronna.control.dtos.FechamentoNovoDto;
-import br.com.ronna.control.dtos.FechamentoStatusDto;
-import br.com.ronna.control.dtos.FiltroFechamentoDto;
+import br.com.ronna.control.dtos.*;
 import br.com.ronna.control.enums.FechamentoStatus;
 import br.com.ronna.control.models.*;
 import br.com.ronna.control.services.*;
@@ -50,13 +47,23 @@ public class FechamentoController {
 
 
     @GetMapping
-    public ResponseEntity<Page<FechamentoModel>> findAll(@PageableDefault(page = 0, size = 100, sort = "fechamentoInicio", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<Page<FechamentoModel>> findAll(@PageableDefault(page = 0, size = 100,
+            sort = "fechamentoInicio", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        log.info("Listando todos os fechamentos...");
+        log.info("Pageable: {}", pageable.toString());
         return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.findAll(pageable));
     }
 
     @GetMapping("/{fechamentoId}")
-    public ResponseEntity<FechamentoModel> findById(@PathVariable UUID fechamentoId) {
-        return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.findById(fechamentoId).get());
+    public ResponseEntity<Object> findByIdWithVisitas(@PathVariable UUID fechamentoId) {
+        Optional<FechamentoModel> fechamentoModelOptional = fechamentoService.findByIdWithVisitas(fechamentoId);
+        if (!fechamentoModelOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Fechamento não encontrado!");
+        }
+        FechamentoResponseDto fechamentoResponseDto = new FechamentoResponseDto();
+        BeanUtils.copyProperties(fechamentoModelOptional.get(), fechamentoResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(fechamentoResponseDto);
     }
 
     @GetMapping("/cliente/{clienteId}")
@@ -71,7 +78,8 @@ public class FechamentoController {
 
     @GetMapping("/local/{clienteLocalId}")
     public ResponseEntity<Object> listarFechamentosClienteLocal(@PathVariable(value = "clienteLocalId")UUID clienteLocalId,
-                                                                @PageableDefault(page = 0, size = 100, sort = "fechamentoInicio", direction = Sort.Direction.ASC)Pageable pageable) {
+                                                                @PageableDefault(page = 0, size = 100,
+                                                                        sort = "fechamentoInicio", direction = Sort.Direction.ASC)Pageable pageable) {
         var localModelOptional = localService.findById(clienteLocalId);
         if(!localModelOptional.isPresent()) {
             log.info("Local do cliente {} não encontrado!", clienteLocalId);
@@ -82,7 +90,8 @@ public class FechamentoController {
     }
 
     @GetMapping("/{clienteLocalId}/{fechamentoId}")
-    public ResponseEntity<Object> buscarFechamento(@PathVariable(value = "clienteLocalId") UUID clienteLocalId, @PathVariable(value = "fechamentoId") UUID fechamentoId) {
+    public ResponseEntity<Object> buscarFechamento(@PathVariable(value = "clienteLocalId") UUID clienteLocalId,
+                                                   @PathVariable(value = "fechamentoId") UUID fechamentoId) {
         var localModelOptional = localService.findById(clienteLocalId);
         if(!localModelOptional.isPresent()) {
             log.info("Local do cliente {} não encontrado!", clienteLocalId);
@@ -132,10 +141,11 @@ public class FechamentoController {
                     fechamentoModel.setLocal(localModel);
                     fechamentoModel.setFechamentoInicio(fechamentoNovoDto.getFechamentoInicio());
                     fechamentoModel.setFechamentoFinal(fechamentoNovoDto.getFechamentoFinal());
-                    fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-                    fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+                    fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("UTC")));
+                    fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
                     fechamentoModel.setFechamentoStatus(FechamentoStatus.CRIADO);
-                    Set<VisitaModel> setVisitas = visitaService.setVisitasPorLocalEPeriodo(localModel.getLocalId(), fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
+                    Set<VisitaModel> setVisitas = visitaService.setVisitasPorLocalEPeriodo(localModel.getLocalId(),
+                            fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
                     fechamentoModel.setVisitas(setVisitas);
 
                     // valor produtos e valor serviços
@@ -153,8 +163,17 @@ public class FechamentoController {
                     fechamentoModel.setFechamentoValorProdutos(totalProdutos);
                     fechamentoModel.setFechamentoValorServicos((totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
                             (totalHoras * contratoModelOptional.get().getContratoValorVisita()));
-                    fechamentoService.save(fechamentoModel);
 
+                    Optional<FechamentoModel> fechamentoModelOptionalExistente =
+                            fechamentoService.findFechamentoModelByLocalIdEPeriodo(localModel.getLocalId(),
+                                    fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
+                    if (fechamentoModelOptionalExistente.isPresent()) {
+                        fechamentoModel.setFechamentoId(fechamentoModelOptionalExistente.get().getFechamentoId());
+                        fechamentoService.delete(fechamentoModelOptionalExistente.get());
+                    }
+
+
+                    fechamentoService.save(fechamentoModel);
                 }
             }
 
@@ -169,11 +188,12 @@ public class FechamentoController {
                 fechamentoModel.setCliente(clienteModel);
                 fechamentoModel.setFechamentoInicio(fechamentoNovoDto.getFechamentoInicio());
                 fechamentoModel.setFechamentoFinal(fechamentoNovoDto.getFechamentoFinal());
-                fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-                fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+                fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("UTC")));
+                fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
                 fechamentoModel.setFechamentoStatus(FechamentoStatus.CRIADO);
 
-                Set<VisitaModel> setVisitas = visitaService.listarVisitasPorClienteEPeriodoFechamento(clienteModel, fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
+                Set<VisitaModel> setVisitas = visitaService.listarVisitasPorClienteEPeriodoFechamento(clienteModel,
+                        fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
                 fechamentoModel.setVisitas(setVisitas);
 
                 // valor produtos e valor serviços
@@ -192,6 +212,13 @@ public class FechamentoController {
                 fechamentoModel.setFechamentoValorProdutos(totalProdutos);
                 fechamentoModel.setFechamentoValorServicos((totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
                         (totalHoras * contratoModelOptional.get().getContratoValorVisita()));
+                Optional<FechamentoModel> fechamentoModelOptionalExistente =
+                        fechamentoService.findFechamentoModelsByClienteIdAndPeriodo(clienteModel.getClienteId(),
+                                fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
+                if (fechamentoModelOptionalExistente.isPresent()) {
+                    fechamentoModel.setFechamentoId(fechamentoModelOptionalExistente.get().getFechamentoId());
+                    fechamentoService.delete(fechamentoModelOptionalExistente.get());
+                }
                 fechamentoService.save(fechamentoModel);
 
                 log.debug("Fechamento por cliente novo: {}", fechamentoModel.toString());
@@ -201,16 +228,19 @@ public class FechamentoController {
             return ResponseEntity.status(HttpStatus.OK).body("Fechamentos gerados com sucesso! ");
         } catch (DataIntegrityViolationException e) {
             log.error("Erro: de integridade: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro: Não foi possível salvar o fechamento devido a uma violação de integridade de dados. Por favor, verifique se o fechamento já foi criado ou se há dados duplicados.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro: Não foi possível salvar o fechamento devido a uma violação de integridade de dados. " +
+                    "Por favor, verifique se o fechamento já foi criado ou se há dados duplicados.");
         } catch (Exception e) {
             log.error("Erro ao criar fechamento: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno: Ocorreu um erro ao criar o fechamento. Por favor, tente novamente.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno: Ocorreu um erro ao criar o fechamento. " +
+                    "Por favor, tente novamente.");
         }
     }
 
     @PostMapping("/filtro")
     public ResponseEntity<Object> filtrarFechamentos(@RequestBody FiltroFechamentoDto filtroFechamentoDto,
-                                                     @PageableDefault(page = 0, size = 50 )Pageable pageable) {
+                                                     @PageableDefault(page = 0, size = 50,
+                                                             sort = "fechamento_inicio", direction = Sort.Direction.ASC )Pageable pageable) {
         log.debug(filtroFechamentoDto);
 
 
@@ -273,7 +303,8 @@ public class FechamentoController {
             if(!localModelOptional.isPresent()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Local selecionado não encontrado!");
             }
-            Set<VisitaModel> visitaModels = visitaService.setVisitasPorLocalEPeriodo(localModelOptional.get().getLocalId(), fechamentoDto.getFechamentoInicio(), fechamentoDto.getFechamentoFinal());
+            Set<VisitaModel> visitaModels = visitaService.setVisitasPorLocalEPeriodo(localModelOptional.get().getLocalId(),
+                    fechamentoDto.getFechamentoInicio(), fechamentoDto.getFechamentoFinal());
             if(visitaModels.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro: Não existem visitas para este cliente no período selecionado!");
             }
@@ -296,15 +327,16 @@ public class FechamentoController {
             fechamentoModel.setFechamentoValorServicos( (totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
                     ( totalHoras * contratoModelOptional.get().getContratoValorVisita() )  );
             fechamentoModel.setVisitas(visitaModels);
-            fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-            fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+            fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("UTC")));
+            fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
             fechamentoModel.setFechamentoStatus(FechamentoStatus.CRIADO);
             fechamentoService.save(fechamentoModel);
             log.debug("Fechamento separado por local criado com sucesso!");
             return ResponseEntity.status(HttpStatus.CREATED).body(fechamentoModel);
         } else {
             // Fechamento por cliente todos os locais juntos.
-            Set<VisitaModel> visitaModels = visitaService.listarVisitasPorClienteEPeriodoFechamento(clienteModelOptional.get(), fechamentoDto.getFechamentoInicio(), fechamentoDto.getFechamentoFinal());
+            Set<VisitaModel> visitaModels = visitaService.listarVisitasPorClienteEPeriodoFechamento(clienteModelOptional.get(),
+                    fechamentoDto.getFechamentoInicio(), fechamentoDto.getFechamentoFinal());
             if(visitaModels.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro: Não existem visitas para este cliente no período selecionado!");
             }
@@ -326,8 +358,8 @@ public class FechamentoController {
             fechamentoModel.setFechamentoValorServicos( (totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
                     ( totalHoras * contratoModelOptional.get().getContratoValorVisita() )  );
             fechamentoModel.setVisitas(visitaModels);
-            fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-            fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+            fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("UTC")));
+            fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
             fechamentoModel.setFechamentoStatus(FechamentoStatus.CRIADO);
             fechamentoService.save(fechamentoModel);
             log.debug("Fechamento criado com sucesso!");
@@ -338,7 +370,9 @@ public class FechamentoController {
     }
 
     @PutMapping("/{clienteLocalId}/editstatus/{fechamentoId}")
-    public ResponseEntity<Object> editarStatusFechamento(@PathVariable(value = "clienteLocalId") UUID clienteLocalId, @PathVariable(value = "fechamentoId") UUID fechamentoId, @RequestBody FechamentoStatusDto fechamentoStatusDto) {
+    public ResponseEntity<Object> editarStatusFechamento(@PathVariable(value = "clienteLocalId") UUID clienteLocalId,
+                                                         @PathVariable(value = "fechamentoId") UUID fechamentoId,
+                                                         @RequestBody FechamentoStatusDto fechamentoStatusDto) {
         var localModelOptional = localService.findById(clienteLocalId);
         if(!localModelOptional.isPresent()) {
             log.info("Local do cliente {} não encontrado!", clienteLocalId);
@@ -350,7 +384,7 @@ public class FechamentoController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro: Fechamento não encontrado!");
         }
         fechamentoModelOptional.get().setFechamentoStatus(fechamentoStatusDto.getFechamentoStatus());
-        fechamentoModelOptional.get().setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        fechamentoModelOptional.get().setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
         fechamentoService.save(fechamentoModelOptional.get());
         log.info("Status do fechamento atualizado com sucesso para {}", fechamentoStatusDto.getFechamentoStatus());
         return ResponseEntity.status(HttpStatus.OK).body(fechamentoModelOptional.get());
@@ -416,7 +450,8 @@ public class FechamentoController {
                 }
                 valorRemoto = localModelOptional.get().getCliente().getContrato().getContratoValorRemoto();
                 valorVisita = localModelOptional.get().getCliente().getContrato().getContratoValorVisita();
-                Set<VisitaModel> visitaModels = visitaService.setVisitasPorLocalEPeriodo(localModelOptional.get().getLocalId(), fechamentoDto.getFechamentoInicio(), fechamentoDto.getFechamentoFinal());
+                Set<VisitaModel> visitaModels = visitaService.setVisitasPorLocalEPeriodo(localModelOptional.get().getLocalId(),
+                        fechamentoDto.getFechamentoInicio(), fechamentoDto.getFechamentoFinal());
                 if(visitaModels.isEmpty()) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro: Não existem visitas para este cliente no período selecionado!");
                 }
@@ -444,7 +479,7 @@ public class FechamentoController {
         fechamentoModelOptional.get().setVisitas(visitaModelSet);
         fechamentoModelOptional.get().setFechamentoValorProdutos(totalProdutos);
         fechamentoModelOptional.get().setFechamentoValorServicos( (totalHorasRemoto * valorRemoto) + ( totalHoras * valorVisita )  );
-        fechamentoModelOptional.get().setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        fechamentoModelOptional.get().setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
         fechamentoService.save(fechamentoModelOptional.get());
         // log.info("Fechamento atualizado com sucesso! {}", fechamentoModelOptional.get().getFechamentoId());
         return ResponseEntity.status(HttpStatus.OK).body(fechamentoModelOptional.get());

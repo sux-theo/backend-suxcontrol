@@ -1,10 +1,7 @@
 package br.com.ronna.control.services;
 
 import br.com.ronna.control.dtos.FiltroVisitaDto;
-import br.com.ronna.control.models.ClienteModel;
-import br.com.ronna.control.models.FuncionarioModel;
-import br.com.ronna.control.models.LocalModel;
-import br.com.ronna.control.models.VisitaModel;
+import br.com.ronna.control.models.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -44,4 +41,6 @@ public interface VisitaService {
     Page<VisitaModel> filtrarVisitaFuncionarioEPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable);
 
     void delete(VisitaModel visitaModel);
+
+    Set<VisitaModel> listarVisitasPorFechamento(FechamentoModel fechamentoModel);
 }

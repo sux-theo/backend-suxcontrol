@@ -1,9 +1,6 @@
 package br.com.ronna.control.repositories;
 
-import br.com.ronna.control.models.ClienteModel;
-import br.com.ronna.control.models.FuncionarioModel;
-import br.com.ronna.control.models.LocalModel;
-import br.com.ronna.control.models.VisitaModel;
+import br.com.ronna.control.models.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -77,4 +74,6 @@ public interface VisitaRepository extends JpaRepository<VisitaModel, UUID>, JpaS
                     "AND v.visita_final <= :visitaFinal",
             nativeQuery = true)
     Page<VisitaModel> filtrarVisitaFuncionarioEPeriodo(UUID funcionarioId, LocalDateTime visitaInicio, LocalDateTime visitaFinal, Pageable pageable);
+
+    Set<VisitaModel> findVisitaModelByFechamento(FechamentoModel fechamentoModel);
 }

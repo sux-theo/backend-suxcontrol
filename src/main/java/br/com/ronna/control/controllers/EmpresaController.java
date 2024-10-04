@@ -72,8 +72,8 @@ public class EmpresaController {
         BeanUtils.copyProperties(empresaDto, empresaModel);
 
         empresaModel.setEmpresaStatus(EmpresaStatus.ATIVO);
-        empresaModel.setDataCriacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-        empresaModel.setDataAtualizacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        empresaModel.setDataCriacao(LocalDateTime.now(ZoneId.of("UTC")));
+        empresaModel.setDataAtualizacao(LocalDateTime.now(ZoneId.of("UTC")));
         empresaService.save(empresaModel);
         log.debug("POST criarEmpresa empresaModel salvo {}", empresaModel.toString());
         log.info("Empresa criada com sucesso empresaId {}", empresaModel.getEmpresaId());
@@ -107,7 +107,7 @@ public class EmpresaController {
             empresaModel.setEmpresaEndereco(empresaDto.getEmpresaEndereco());
             empresaModel.setEmpresaEmail(empresaDto.getEmpresaEmail());
             empresaModel.setEmpresaTelefone(empresaDto.getEmpresaTelefone());
-            empresaModel.setDataAtualizacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+            empresaModel.setDataAtualizacao(LocalDateTime.now(ZoneId.of("UTC")));
             empresaModel.setEmpresaStatus(EmpresaStatus.ATIVO);
             empresaService.save(empresaModel);
             log.info("\n'asdasd'");
