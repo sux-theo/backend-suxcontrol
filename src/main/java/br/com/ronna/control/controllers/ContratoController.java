@@ -38,7 +38,8 @@ public class ContratoController {
     //TODO: ajustar verificação para não tentar colocar mais de um contrato no mesmo cliente.
 
     @GetMapping()
-    public ResponseEntity<Page<ContratoModel>> buscarTodosContratos(@PageableDefault(page = 0, size = 10, sort = "contratoId", direction = Sort.Direction.ASC)Pageable pageable){
+    public ResponseEntity<Page<ContratoModel>> buscarTodosContratos(@PageableDefault(page = 0, size = 10, sort = "contratoId",
+            direction = Sort.Direction.ASC)Pageable pageable){
         log.debug("Listando todos os contratos...");
 
         Page<ContratoModel> contratoModelPage = contratoService.findAll(pageable);
@@ -80,8 +81,8 @@ public class ContratoController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Error: Cliente não pode estar em branco!");
         }
 
-        contratoModel.setContratoDataCriacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-        contratoModel.setContratoDataAtualizacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        contratoModel.setContratoDataCriacao(LocalDateTime.now(ZoneId.of("UTC")));
+        contratoModel.setContratoDataAtualizacao(LocalDateTime.now(ZoneId.of("UTC")));
         contratoModel.setContratoStatus(ContratoStatus.ATIVO);
 
         contratoService.save(contratoModel);
@@ -98,7 +99,7 @@ public class ContratoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Contrato não encontrado!");
         }
         contratoModelOptional.get().setContratoStatus(ContratoStatus.DESATIVO);
-        contratoModelOptional.get().setContratoDataAtualizacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        contratoModelOptional.get().setContratoDataAtualizacao(LocalDateTime.now(ZoneId.of("UTC")));
         contratoService.save(contratoModelOptional.get());
         return ResponseEntity.status(HttpStatus.OK).body(contratoModelOptional.get());
     }
@@ -134,7 +135,7 @@ public class ContratoController {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Error: Cliente não pode estar em branco!");
             }
 
-            contratoModel.setContratoDataAtualizacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+            contratoModel.setContratoDataAtualizacao(LocalDateTime.now(ZoneId.of("UTC")));
             contratoModel.setContratoStatus(ContratoStatus.ATIVO);
             contratoService.save(contratoModel);
             return ResponseEntity.status(HttpStatus.OK).body(contratoModel);

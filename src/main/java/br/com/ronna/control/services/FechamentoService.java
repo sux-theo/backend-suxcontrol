@@ -43,4 +43,6 @@ public interface FechamentoService {
     Page<FechamentoModel> filtrarPorFim(FiltroFechamentoDto filtroFechamentoDto, Pageable pageable);
 
     Optional<FechamentoModel> findFechamentoModelByVisita(VisitaModel visitaModel);
+
+    Optional<FechamentoModel> findByIdWithVisitas(UUID fechamentoId);
 }

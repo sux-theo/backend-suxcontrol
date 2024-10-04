@@ -40,7 +40,8 @@ public class PessoaFisicaController {
     private EmpresaService empresaService;
 
     @GetMapping
-    public ResponseEntity<Page<PessoaFisicaModel>> buscarTodasClientesPJ(@PageableDefault(page = 0, size = 10, sort = "clienteNome", direction = Sort.Direction.ASC)Pageable pageable){
+    public ResponseEntity<Page<PessoaFisicaModel>> buscarTodasClientesPJ(@PageableDefault(page = 0, size = 10,
+            sort = "clienteNome", direction = Sort.Direction.ASC)Pageable pageable){
         log.debug("Listando todos clientes PF...");
         //List<PessoaFisicaModel> listaClientePF = pessoaFisicaService.findAll();
 
@@ -85,7 +86,8 @@ public class PessoaFisicaController {
             if(empresaModel.isPresent()) {
                 clientePFModel.setEmpresa(empresaModel.get());
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Empresa informada não foi encontrada! empresaId: " + pessoaFisicaDto.getEmpresa());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Empresa informada não foi encontrada! empresaId: " +
+                        pessoaFisicaDto.getEmpresa());
             }
         } else {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro: Cliente deve estar vinculado a uma empresa!");
@@ -93,8 +95,8 @@ public class PessoaFisicaController {
 
 
         clientePFModel.setClienteStatus(ClienteStatus.ATIVO);
-        clientePFModel.setClienteDataCriacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-        clientePFModel.setClienteDataAtualizacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        clientePFModel.setClienteDataCriacao(LocalDateTime.now(ZoneId.of("UTC")));
+        clientePFModel.setClienteDataAtualizacao(LocalDateTime.now(ZoneId.of("UTC")));
         pessoaFisicaService.save(clientePFModel);
         log.debug("POST criarCliente clientePFModel salvo {}", clientePFModel.toString());
         log.info("Cliente criada com sucesso clienteId {}", clientePFModel.getClienteId());
@@ -123,7 +125,7 @@ public class PessoaFisicaController {
             var pessoaFisicaModel = pessoaFisicaModelOptional.get();
 
             BeanUtils.copyProperties(pessoaFisicaDto, pessoaFisicaModel);
-            pessoaFisicaModel.setClienteDataAtualizacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+            pessoaFisicaModel.setClienteDataAtualizacao(LocalDateTime.now(ZoneId.of("UTC")));
 
             if(pessoaFisicaDto.getEmpresa() != null) {
                 var empresaModelOptional = empresaService.findById(pessoaFisicaDto.getEmpresa());

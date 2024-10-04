@@ -2,6 +2,8 @@ package br.com.ronna.control.models;
 
 import br.com.ronna.control.enums.FechamentoStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.ToString;
@@ -43,7 +45,8 @@ public class FechamentoModel {
     @JoinColumn(name = "clienteId")
     private ClienteModel cliente;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<VisitaModel> visitas;
     
     @Enumerated(EnumType.STRING)
@@ -51,10 +54,10 @@ public class FechamentoModel {
     private FechamentoStatus fechamentoStatus;
     
     @Column(nullable = false)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime createdDate;
     
     @Column(nullable = false)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime updatedDate;
 }

@@ -37,7 +37,8 @@ public class PessoaJuridicaController {
     private EmpresaService empresaService;
 
     @GetMapping
-    public ResponseEntity<Page<PessoaJuridicaModel>> buscarTodasClientesPJ(@PageableDefault(page = 0, size = 10, sort = "clienteNome", direction = Sort.Direction.ASC)Pageable pageable){
+    public ResponseEntity<Page<PessoaJuridicaModel>> buscarTodasClientesPJ(@PageableDefault(page = 0, size = 10, sort = "clienteNome",
+            direction = Sort.Direction.ASC)Pageable pageable){
         log.debug("Listando todos clientes PJ...");
 
         Page<PessoaJuridicaModel> pessoaJuridicaModelPage = pessoaJuridicaService.findAll(pageable);
@@ -47,7 +48,9 @@ public class PessoaJuridicaController {
 
     @GetMapping("empresa/{empresaId}")
     public ResponseEntity<Object> buscarTodosClientesPJPorEmpresa(@PathVariable(value = "empresaId") UUID empresaId,
-                                                                                     @PageableDefault(page = 0, size = 10, sort = "clienteNome", direction = Sort.Direction.ASC) Pageable pageable){
+                                                                                     @PageableDefault(page = 0, size = 10,
+                                                                                             sort = "clienteNome",
+                                                                                             direction = Sort.Direction.ASC) Pageable pageable){
         log.debug("Listando todos clientes PJ da empresa {}...", empresaId);
         //List<PessoaJuridicaModel> listaClientePJ = pessoaJuridicaService.findAllByEmpresaId(empresaId);
 
@@ -94,7 +97,8 @@ public class PessoaJuridicaController {
             if(empresaModel.isPresent()) {
                 clientePJModel.setEmpresa(empresaModel.get());
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Empresa informada não foi encontrada! empresaId: " + pessoaJuridicaDto.getEmpresa());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Empresa informada não foi encontrada! empresaId: " +
+                        pessoaJuridicaDto.getEmpresa());
             }
         } else {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro: Cliente deve estar vinculado a uma empresa!");
@@ -103,8 +107,8 @@ public class PessoaJuridicaController {
 
         clientePJModel.setFechamentoSeparado(Boolean.valueOf(pessoaJuridicaDto.getIsFechamentoSeparado()));
         clientePJModel.setClienteStatus(ClienteStatus.ATIVO);
-        clientePJModel.setClienteDataCriacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-        clientePJModel.setClienteDataAtualizacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        clientePJModel.setClienteDataCriacao(LocalDateTime.now(ZoneId.of("UTC")));
+        clientePJModel.setClienteDataAtualizacao(LocalDateTime.now(ZoneId.of("UTC")));
         pessoaJuridicaService.save(clientePJModel);
         log.debug("POST criarCliente clientePJModel salvo {}", clientePJModel.toString());
         log.info("Cliente criada com sucesso clienteId {}", clientePJModel.getClienteId());
@@ -132,7 +136,7 @@ public class PessoaJuridicaController {
         } else {
             var pessoaJuridicaModel = pessoaJuridicaModelOptional.get();
             BeanUtils.copyProperties(pessoaJuridicaDto, pessoaJuridicaModel);
-            pessoaJuridicaModel.setClienteDataAtualizacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+            pessoaJuridicaModel.setClienteDataAtualizacao(LocalDateTime.now(ZoneId.of("UTC")));
 
             if(pessoaJuridicaDto.getEmpresa() != null) {
                 var empresaModelOptional = empresaService.findById(pessoaJuridicaDto.getEmpresa());

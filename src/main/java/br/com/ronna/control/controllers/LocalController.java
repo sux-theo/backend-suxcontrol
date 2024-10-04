@@ -35,7 +35,9 @@ public class LocalController {
     ClienteService clienteService;
 
     @GetMapping("/{clienteId}")
-    public ResponseEntity<Object> listaLocaisPorCliente(@PathVariable (value = "clienteId") UUID clienteId, @PageableDefault(page = 0, size = 100, sort = "localNome", direction = Sort.Direction.ASC)Pageable pageable) {
+    public ResponseEntity<Object> listaLocaisPorCliente(@PathVariable (value = "clienteId") UUID clienteId,
+                                                        @PageableDefault(page = 0, size = 100,
+                                                                sort = "localNome", direction = Sort.Direction.ASC)Pageable pageable) {
         var clienteModelOptional = clienteService.findById(clienteId);
         if(!clienteModelOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Cliente não encontrado!");
@@ -58,8 +60,8 @@ public class LocalController {
         localModel.setCliente(clienteModelOptional.get());
         localModel.setLocalStatus(LocalStatus.ATIVO);
 
-        localModel.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-        localModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        localModel.setCreatedDate(LocalDateTime.now(ZoneId.of("UTC")));
+        localModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
 
         localService.save(localModel);
         return ResponseEntity.status(HttpStatus.CREATED).body(localModel);
@@ -102,7 +104,7 @@ public class LocalController {
         }
 
         BeanUtils.copyProperties(localDto, localModelOptional.get());
-        localModelOptional.get().setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        localModelOptional.get().setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
         localModelOptional.get().setLocalStatus(LocalStatus.ATIVO);
         localService.save(localModelOptional.get());
         return ResponseEntity.status(HttpStatus.OK).body(localModelOptional.get());

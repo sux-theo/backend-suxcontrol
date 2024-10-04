@@ -38,7 +38,8 @@ public class AtivoController {
     ContratoService contratoService;
 
     @GetMapping()
-    public ResponseEntity<Page<AtivoModel>> buscarTodosAtivos(@PageableDefault(page = 0, size = 100, sort = "ativoDescricao", direction = Sort.Direction.ASC)Pageable pageable){
+    public ResponseEntity<Page<AtivoModel>> buscarTodosAtivos(@PageableDefault(page = 0, size = 100,
+            sort = "ativoDescricao", direction = Sort.Direction.ASC)Pageable pageable){
         log.debug("Listando todos os ativos...");
         Page<AtivoModel> ativoModelPage = ativoService.findAll(pageable);
 
@@ -64,8 +65,8 @@ public class AtivoController {
         var ativoModel = new AtivoModel();
         BeanUtils.copyProperties(ativoDto, ativoModel);
 
-        ativoModel.setAtivoDataCriacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-        ativoModel.setAtivoDataAtualizacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        ativoModel.setAtivoDataCriacao(LocalDateTime.now(ZoneId.of("UTC")));
+        ativoModel.setAtivoDataAtualizacao(LocalDateTime.now(ZoneId.of("UTC")));
         ativoModel.setAtivoStatus(AtivoStatus.DISPONÍVEL);
 
         ativoService.save(ativoModel);
@@ -96,7 +97,7 @@ public class AtivoController {
         } else {
             var ativoModel = ativoModelOptional.get();
             BeanUtils.copyProperties(ativoDto, ativoModel);
-            ativoModel.setAtivoDataAtualizacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+            ativoModel.setAtivoDataAtualizacao(LocalDateTime.now(ZoneId.of("UTC")));
             // ativoModel.setAtivoStatus(AtivoStatus.ATIVO);
             ativoService.save(ativoModel);
             return ResponseEntity.status(HttpStatus.OK).body(ativoModel);

@@ -6,6 +6,7 @@ import br.com.ronna.control.models.FechamentoModel;
 import br.com.ronna.control.models.VisitaModel;
 import br.com.ronna.control.repositories.FechamentoRepository;
 import br.com.ronna.control.services.FechamentoService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
+@Log4j2
 public class FechamentoServiceImpl implements FechamentoService {
     
     @Autowired
@@ -96,5 +98,10 @@ public class FechamentoServiceImpl implements FechamentoService {
     @Override
     public Optional<FechamentoModel> findFechamentoModelByVisita(VisitaModel visitaModel) {
         return fechamentoRepository.findFechamentoModelByVisitas(visitaModel);
+    }
+
+    @Override
+    public Optional<FechamentoModel> findByIdWithVisitas(UUID fechamentoId) {
+        return fechamentoRepository.findByIdWithVisitas(fechamentoId);
     }
 }

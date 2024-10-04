@@ -39,7 +39,8 @@ public class ClienteController {
     private ClienteService clienteService;
 
     @GetMapping
-    public ResponseEntity<Page<ClienteModel>> buscarTodosClientes(@PageableDefault(page = 0, size = 10, sort = "clienteNome", direction = Sort.Direction.ASC)Pageable pageable){
+    public ResponseEntity<Page<ClienteModel>> buscarTodosClientes(@PageableDefault(page = 0, size = 10,
+            sort = "clienteNome", direction = Sort.Direction.ASC)Pageable pageable){
         log.debug("Listando todos clientes...");
         //List<PessoaFisicaModel> listaClientePF = pessoaFisicaService.findAll();
 

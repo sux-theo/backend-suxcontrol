@@ -1,10 +1,7 @@
 package br.com.ronna.control.services.Impl;
 
 import br.com.ronna.control.dtos.FiltroVisitaDto;
-import br.com.ronna.control.models.ClienteModel;
-import br.com.ronna.control.models.FuncionarioModel;
-import br.com.ronna.control.models.LocalModel;
-import br.com.ronna.control.models.VisitaModel;
+import br.com.ronna.control.models.*;
 import br.com.ronna.control.repositories.VisitaRepository;
 import br.com.ronna.control.services.VisitaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +75,11 @@ public class VisitaServiceImpl implements VisitaService {
     @Override
     public void delete(VisitaModel visitaModel) {
         visitaRepository.delete(visitaModel);
+    }
+
+    @Override
+    public Set<VisitaModel> listarVisitasPorFechamento(FechamentoModel fechamentoModel) {
+        return visitaRepository.findVisitaModelByFechamento(fechamentoModel);
     }
 
     @Override

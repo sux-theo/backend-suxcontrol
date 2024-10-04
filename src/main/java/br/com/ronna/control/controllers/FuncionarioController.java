@@ -31,7 +31,8 @@ public class FuncionarioController {
     private FuncionarioService funcionarioService;
 
     @GetMapping
-    public ResponseEntity<Page<FuncionarioModel>> buscarTodosFuncionarios(@PageableDefault(page = 0, size = 10, sort = "funcionarioNome", direction = Sort.Direction.ASC)Pageable pageable){
+    public ResponseEntity<Page<FuncionarioModel>> buscarTodosFuncionarios(@PageableDefault(page = 0, size = 10,
+            sort = "funcionarioNome", direction = Sort.Direction.ASC)Pageable pageable){
         log.debug("Listando todos os funcionários...");
 
         Page<FuncionarioModel> funcionarioModelPage = funcionarioService.findAll(pageable);
@@ -58,8 +59,8 @@ public class FuncionarioController {
         BeanUtils.copyProperties(funcionarioDto, funcionarioModel);
 
         funcionarioModel.setFuncionarioStatus(FuncionarioStatus.ATIVO);
-        funcionarioModel.setCreatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
-        funcionarioModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        funcionarioModel.setCreatedDate(LocalDateTime.now(ZoneId.of("UTC")));
+        funcionarioModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
         funcionarioService.save(funcionarioModel);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(funcionarioModel);
@@ -77,7 +78,7 @@ public class FuncionarioController {
         FuncionarioModel funcionarioModel = funcionarioModelOptional.get();
         BeanUtils.copyProperties(funcionarioDto, funcionarioModel);
 
-        funcionarioModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        funcionarioModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
         funcionarioModel.setFuncionarioStatus(FuncionarioStatus.ATIVO);
         funcionarioService.save(funcionarioModel);
 
@@ -93,7 +94,7 @@ public class FuncionarioController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Funcionário não encontrado!");
         }
         funcionarioModelOptional.get().setFuncionarioStatus(FuncionarioStatus.DESATIVO);
-        funcionarioModelOptional.get().setUpdatedDate(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
+        funcionarioModelOptional.get().setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
         funcionarioService.save(funcionarioModelOptional.get());
         return ResponseEntity.status(HttpStatus.OK).body(funcionarioModelOptional.get());
     }
