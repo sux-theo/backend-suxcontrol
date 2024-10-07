@@ -193,8 +193,8 @@ public class FechamentoController {
 
                 FechamentoModel fechamentoModel = new FechamentoModel();
                 fechamentoModel.setCliente(clienteModel);
-                fechamentoModel.setFechamentoInicio(fechamentoNovoDto.getFechamentoInicio());
-                fechamentoModel.setFechamentoFinal(fechamentoNovoDto.getFechamentoFinal());
+                fechamentoModel.setFechamentoInicio(fechamentoInicioUtc);
+                fechamentoModel.setFechamentoFinal(fechamentoFinalUtc);
                 fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("UTC")));
                 fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
                 fechamentoModel.setFechamentoStatus(FechamentoStatus.CRIADO);
