@@ -216,6 +216,9 @@ public class FechamentoController {
                 fechamentoModel.setFechamentoValorProdutos(totalProdutos);
                 fechamentoModel.setFechamentoValorServicos((totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
                         (totalHoras * contratoModelOptional.get().getContratoValorVisita()));
+                log.info("FechamentoInicio: {}", fechamentoModel.getFechamentoInicio());
+                log.info("FechamentoFinal: {}", fechamentoModel.getFechamentoFinal());
+                log.info("FechamentoClienteId: {}", clienteModel.getClienteId());
                 Optional<FechamentoModel> fechamentoModelOptionalExistente =
                         fechamentoService.findFechamentoModelsByClienteIdAndPeriodo(clienteModel.getClienteId(),
                                 fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
