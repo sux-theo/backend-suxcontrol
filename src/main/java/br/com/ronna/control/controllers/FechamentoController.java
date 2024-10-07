@@ -46,6 +46,8 @@ public class FechamentoController {
     private ContratoService contratoService;
 
 
+    //Controller com os métodos de CRUD para a entidade FechamentoModel
+
     @GetMapping
     public ResponseEntity<Page<FechamentoModel>> findAll(@PageableDefault(page = 0, size = 100,
             sort = "fechamentoInicio", direction = Sort.Direction.DESC) Pageable pageable) {
