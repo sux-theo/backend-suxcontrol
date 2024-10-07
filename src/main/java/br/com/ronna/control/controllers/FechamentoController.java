@@ -411,6 +411,20 @@ public class FechamentoController {
         return ResponseEntity.status(HttpStatus.OK).body(fechamentoModelOptional.get());
     }
 
+    @PutMapping("/editarStatus/{fechamentoId}")
+    public ResponseEntity<Object> editarStatus (@PathVariable(value = "fechamentoId") UUID fechamentoId, @RequestBody FechamentoStatusDto fechamentoStatusDto) {
+        var fechamentoModelOptional = fechamentoService.findById(fechamentoId);
+        if(!fechamentoModelOptional.isPresent()) {
+            log.info("Fechamento {} não encontrado!", fechamentoId);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro: Fechamento não encontrado!");
+        }
+        fechamentoModelOptional.get().setFechamentoStatus(fechamentoStatusDto.getFechamentoStatus());
+        fechamentoModelOptional.get().setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
+        fechamentoService.save(fechamentoModelOptional.get());
+        log.info("Status do fechamento atualizado com sucesso para {}", fechamentoStatusDto.getFechamentoStatus());
+        return ResponseEntity.status(HttpStatus.OK).body(fechamentoModelOptional.get());
+    }
+
     @PutMapping("/editar/{fechamentoId}")
     public ResponseEntity<Object> editarFechamento( @PathVariable(value = "fechamentoId") UUID fechamentoId, @RequestBody FechamentoDto fechamentoDto) {
 
