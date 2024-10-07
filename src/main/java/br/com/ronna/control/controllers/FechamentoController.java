@@ -150,7 +150,7 @@ public class FechamentoController {
                             fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
                     fechamentoModel.setVisitas(setVisitas);
 
-                    // valor produtos e valor serviços
+                    // valor dos produtos e valor dos serviços
                     double totalHoras = 0.0;
                     double totalHorasRemoto = 0.0;
                     double totalProdutos = 0.0;
@@ -169,7 +169,9 @@ public class FechamentoController {
                     Optional<FechamentoModel> fechamentoModelOptionalExistente =
                             fechamentoService.findFechamentoModelByLocalIdEPeriodo(localModel.getLocalId(),
                                     fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
+                    log.info("FechamentoModelOptionalExistente: {}", fechamentoModelOptionalExistente);
                     if (fechamentoModelOptionalExistente.isPresent()) {
+                        log.info("FechamentoModelOptionalExistente: {}", fechamentoModelOptionalExistente.get());
                         fechamentoModel.setFechamentoId(fechamentoModelOptionalExistente.get().getFechamentoId());
                         fechamentoService.delete(fechamentoModelOptionalExistente.get());
                     }
@@ -217,7 +219,9 @@ public class FechamentoController {
                 Optional<FechamentoModel> fechamentoModelOptionalExistente =
                         fechamentoService.findFechamentoModelsByClienteIdAndPeriodo(clienteModel.getClienteId(),
                                 fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
+                log.info("FechamentoModelOptionalExistente: {}", fechamentoModelOptionalExistente);
                 if (fechamentoModelOptionalExistente.isPresent()) {
+                    log.info("FechamentoModelOptionalExistente: {}", fechamentoModelOptionalExistente.get());
                     fechamentoModel.setFechamentoId(fechamentoModelOptionalExistente.get().getFechamentoId());
                     fechamentoService.delete(fechamentoModelOptionalExistente.get());
                 }
