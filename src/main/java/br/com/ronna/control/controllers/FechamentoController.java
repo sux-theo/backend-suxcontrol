@@ -150,6 +150,14 @@ public class FechamentoController {
                             fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
                     fechamentoModel.setVisitas(setVisitas);
 
+                    LocalDateTime fechamentoInicioUtc = fechamentoNovoDto.getFechamentoInicio().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+                    LocalDateTime fechamentoFinalUtc = fechamentoNovoDto.getFechamentoFinal().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+
+                    log.info("FechamentoInicio (UTC): {}", fechamentoInicioUtc);
+                    log.info("FechamentoFinal (UTC): {}", fechamentoFinalUtc);
+
+
+
                     // valor dos produtos e valor dos serviços
                     double totalHoras = 0.0;
                     double totalHorasRemoto = 0.0;
@@ -167,8 +175,8 @@ public class FechamentoController {
                             (totalHoras * contratoModelOptional.get().getContratoValorVisita()));
 
                     Optional<FechamentoModel> fechamentoModelOptionalExistente =
-                            fechamentoService.findFechamentoModelByLocalIdEPeriodo(localModel.getLocalId(),
-                                    fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
+                            fechamentoService.findFechamentoModelsByClienteIdAndPeriodo(clienteModel.getClienteId(),
+                                    fechamentoInicioUtc, fechamentoFinalUtc);
                     log.info("FechamentoModelOptionalExistente: {}", fechamentoModelOptionalExistente);
                     if (fechamentoModelOptionalExistente.isPresent()) {
                         log.info("FechamentoModelOptionalExistente: {}", fechamentoModelOptionalExistente.get());
@@ -200,7 +208,14 @@ public class FechamentoController {
                         fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
                 fechamentoModel.setVisitas(setVisitas);
 
-                // valor produtos e valor serviços
+                LocalDateTime fechamentoInicioUtc = fechamentoNovoDto.getFechamentoInicio().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+                LocalDateTime fechamentoFinalUtc = fechamentoNovoDto.getFechamentoFinal().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+
+                log.info("FechamentoInicio (UTC): {}", fechamentoInicioUtc);
+                log.info("FechamentoFinal (UTC): {}", fechamentoFinalUtc);
+
+
+                // valor dos produtos e valor dos serviços
                 double totalHoras = 0.0;
                 double totalHorasRemoto = 0.0;
                 double totalProdutos = 0.0;
@@ -221,7 +236,7 @@ public class FechamentoController {
                 log.info("FechamentoClienteId: {}", clienteModel.getClienteId());
                 Optional<FechamentoModel> fechamentoModelOptionalExistente =
                         fechamentoService.findFechamentoModelsByClienteIdAndPeriodo(clienteModel.getClienteId(),
-                                fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
+                                fechamentoInicioUtc, fechamentoFinalUtc);
                 log.info("FechamentoModelOptionalExistente: {}", fechamentoModelOptionalExistente);
                 if (fechamentoModelOptionalExistente.isPresent()) {
                     log.info("FechamentoModelOptionalExistente: {}", fechamentoModelOptionalExistente.get());
