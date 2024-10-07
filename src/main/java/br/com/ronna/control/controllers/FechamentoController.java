@@ -54,7 +54,10 @@ public class FechamentoController {
 
         log.info("Listando todos os fechamentos...");
         log.info("Pageable: {}", pageable.toString());
-        return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.findAll(pageable));
+        FiltroFechamentoDto filtroFechamentoDto = new FiltroFechamentoDto();
+        filtroFechamentoDto.setInicio(LocalDateTime.now().withDayOfMonth(1).withHour(3).withMinute(0).withSecond(0).withNano(0));
+        filtroFechamentoDto.setFim(LocalDateTime.now().plusMonths(1).withDayOfMonth(1).withHour(2).withMinute(59).withSecond(0).withNano(0));
+        return ResponseEntity.status(HttpStatus.OK).body(fechamentoService.filtrarPorInicioFim(filtroFechamentoDto, pageable));
     }
 
     @GetMapping("/{fechamentoId}")
