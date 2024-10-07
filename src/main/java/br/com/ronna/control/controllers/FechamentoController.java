@@ -50,7 +50,7 @@ public class FechamentoController {
 
     @GetMapping
     public ResponseEntity<Page<FechamentoModel>> findAll(@PageableDefault(page = 0, size = 100,
-            sort = "fechamentoInicio", direction = Sort.Direction.DESC) Pageable pageable) {
+            sort = "fechamento_inicio", direction = Sort.Direction.DESC) Pageable pageable) {
 
         log.info("Listando todos os fechamentos...");
         log.info("Pageable: {}", pageable.toString());
