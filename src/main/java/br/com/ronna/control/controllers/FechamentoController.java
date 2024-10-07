@@ -110,6 +110,9 @@ public class FechamentoController {
     @PostMapping("/new")
     public ResponseEntity<Object> novoFechamento(@RequestBody FechamentoNovoDto fechamentoNovoDto) {
         log.debug(fechamentoNovoDto.toString());
+        LocalDateTime fechamentoInicioUtc = fechamentoNovoDto.getFechamentoInicio().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+        LocalDateTime fechamentoFinalUtc = fechamentoNovoDto.getFechamentoFinal().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+
 
         // Verificar
 
@@ -141,22 +144,14 @@ public class FechamentoController {
                     FechamentoModel fechamentoModel = new FechamentoModel();
                     fechamentoModel.setCliente(clienteModel);
                     fechamentoModel.setLocal(localModel);
-                    fechamentoModel.setFechamentoInicio(fechamentoNovoDto.getFechamentoInicio());
-                    fechamentoModel.setFechamentoFinal(fechamentoNovoDto.getFechamentoFinal());
+                    fechamentoModel.setFechamentoInicio(fechamentoInicioUtc);
+                    fechamentoModel.setFechamentoFinal(fechamentoFinalUtc);
                     fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("UTC")));
                     fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
                     fechamentoModel.setFechamentoStatus(FechamentoStatus.CRIADO);
                     Set<VisitaModel> setVisitas = visitaService.setVisitasPorLocalEPeriodo(localModel.getLocalId(),
                             fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
                     fechamentoModel.setVisitas(setVisitas);
-
-                    LocalDateTime fechamentoInicioUtc = fechamentoNovoDto.getFechamentoInicio().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
-                    LocalDateTime fechamentoFinalUtc = fechamentoNovoDto.getFechamentoFinal().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
-
-                    log.info("FechamentoInicio (UTC): {}", fechamentoInicioUtc);
-                    log.info("FechamentoFinal (UTC): {}", fechamentoFinalUtc);
-
-
 
                     // valor dos produtos e valor dos serviços
                     double totalHoras = 0.0;
@@ -207,9 +202,6 @@ public class FechamentoController {
                 Set<VisitaModel> setVisitas = visitaService.listarVisitasPorClienteEPeriodoFechamento(clienteModel,
                         fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
                 fechamentoModel.setVisitas(setVisitas);
-
-                LocalDateTime fechamentoInicioUtc = fechamentoNovoDto.getFechamentoInicio().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
-                LocalDateTime fechamentoFinalUtc = fechamentoNovoDto.getFechamentoFinal().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
 
                 log.info("FechamentoInicio (UTC): {}", fechamentoInicioUtc);
                 log.info("FechamentoFinal (UTC): {}", fechamentoFinalUtc);
