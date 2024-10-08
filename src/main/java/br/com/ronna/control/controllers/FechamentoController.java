@@ -174,8 +174,9 @@ public class FechamentoController {
                     fechamentoModel.setFechamentoValorServicos((totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
                             (totalHoras * contratoModelOptional.get().getContratoValorVisita()));
 
+                    log.info("Local id: {}", localModel.getLocalId());
                     Optional<FechamentoModel> fechamentoModelOptionalExistente =
-                            fechamentoService.findFechamentoModelsByClienteIdAndPeriodo(localModel.getLocalId(),
+                            fechamentoService.findFechamentoModelByLocalIdEPeriodo(localModel.getLocalId(),
                                     fechamentoInicioUtc, fechamentoFinalUtc);
                     log.info("FechamentoModelOptionalExistente: {}", fechamentoModelOptionalExistente);
                     if (fechamentoModelOptionalExistente.isPresent()) {
