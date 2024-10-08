@@ -175,7 +175,7 @@ public class FechamentoController {
                             (totalHoras * contratoModelOptional.get().getContratoValorVisita()));
 
                     Optional<FechamentoModel> fechamentoModelOptionalExistente =
-                            fechamentoService.findFechamentoModelsByClienteIdAndPeriodo(clienteModel.getClienteId(),
+                            fechamentoService.findFechamentoModelsByClienteIdAndPeriodo(localModel.getLocalId(),
                                     fechamentoInicioUtc, fechamentoFinalUtc);
                     log.info("FechamentoModelOptionalExistente: {}", fechamentoModelOptionalExistente);
                     if (fechamentoModelOptionalExistente.isPresent()) {
