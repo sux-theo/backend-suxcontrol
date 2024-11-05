@@ -1,5 +1,6 @@
 package br.com.ronna.control.services.Impl;
 
+import br.com.ronna.control.dtos.ClienteVisitasDto;
 import br.com.ronna.control.dtos.FiltroVisitaDto;
 import br.com.ronna.control.models.*;
 import br.com.ronna.control.repositories.VisitaRepository;
@@ -29,6 +30,7 @@ public class VisitaServiceImpl implements VisitaService {
 
     @Override
     public void save(VisitaModel visitaModel) {
+
         visitaRepository.save(visitaModel);
     }
 
@@ -80,6 +82,16 @@ public class VisitaServiceImpl implements VisitaService {
     @Override
     public Set<VisitaModel> listarVisitasPorFechamento(FechamentoModel fechamentoModel) {
         return visitaRepository.findVisitaModelByFechamento(fechamentoModel);
+    }
+
+    @Override
+    public Long analiseVisitas(LocalDateTime periodoInicio, LocalDateTime periodoFinal) {
+        return visitaRepository.countTotalVisitas(periodoInicio, periodoFinal);
+    }
+
+    @Override
+    public Set<ClienteVisitasDto> contarVisitasPorCliente(LocalDateTime periodoInicio, LocalDateTime periodoFinal) {
+        return visitaRepository.contarVisitasPorCliente(periodoInicio, periodoFinal);
     }
 
     @Override

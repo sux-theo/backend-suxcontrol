@@ -1,5 +1,6 @@
 package br.com.ronna.control.services;
 
+import br.com.ronna.control.dtos.ClienteVisitasDto;
 import br.com.ronna.control.dtos.FiltroVisitaDto;
 import br.com.ronna.control.models.*;
 import org.springframework.data.domain.Page;
@@ -43,4 +44,8 @@ public interface VisitaService {
     void delete(VisitaModel visitaModel);
 
     Set<VisitaModel> listarVisitasPorFechamento(FechamentoModel fechamentoModel);
+
+    Long analiseVisitas(LocalDateTime periodoInicio, LocalDateTime periodoFinal);
+
+    Set<ClienteVisitasDto> contarVisitasPorCliente(LocalDateTime periodoInicio, LocalDateTime periodoFinal);
 }
