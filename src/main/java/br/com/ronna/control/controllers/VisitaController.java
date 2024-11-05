@@ -160,9 +160,11 @@ public class VisitaController {
 
         visitaModel.setVisitaTotalHoras(calculoHoras.diferencaInicioFim(visitaModel.getVisitaInicio(), visitaModel.getVisitaFinal()));
 
-        visitaService.save(visitaModel);
-        log.debug(visitaModel);
+        log.debug("Visita criada: {}", visitaModel);
         return ResponseEntity.status(HttpStatus.CREATED).body(visitaModel);
+        // visitaService.save(visitaModel);
+        // log.debug(visitaModel);
+        // return ResponseEntity.status(HttpStatus.CREATED).body(visitaModel);
     }
 
     @PutMapping("/{visitaId}")
@@ -223,19 +225,24 @@ public class VisitaController {
 
         if (hasCliente && hasFuncionario && hasInicio && hasFinal) {
             log.debug("Entrou filtro cliente, funcionario e periodo");
-            return ResponseEntity.status(HttpStatus.OK).body(visitaService.filtrarVisitaClienteFuncionarioEPeriodo(filtroVisitaDto, pageable));
+            Page<VisitaModel> visitaModelPage = visitaService.filtrarVisitaClienteFuncionarioEPeriodo(filtroVisitaDto, pageable);
+            return ResponseEntity.status(HttpStatus.OK).body(visitaModelPage);
         }
         if(hasCliente && hasInicio && hasFinal){
             log.debug("Entrou filtro cliente e periodo");
-            return ResponseEntity.status(HttpStatus.OK).body(visitaService.filtrarVisitaClienteEPeriodo(filtroVisitaDto, pageable));
+            Page<VisitaModel> visitaModelPage = visitaService.filtrarVisitaClienteEPeriodo(filtroVisitaDto, pageable);
+            return ResponseEntity.status(HttpStatus.OK).body(visitaModelPage);
         }
         if(hasFuncionario && hasInicio && hasFinal){
             log.debug("Entrou filtro cliente e periodo");
-            return ResponseEntity.status(HttpStatus.OK).body(visitaService.filtrarVisitaFuncionarioEPeriodo(filtroVisitaDto, pageable));
+            Page<VisitaModel> visitaModelPage = visitaService.filtrarVisitaFuncionarioEPeriodo(filtroVisitaDto, pageable);
+            return ResponseEntity.status(HttpStatus.OK).body(visitaModelPage);
         }
         if (hasInicio && hasFinal) {
             log.debug("Entrou filtro periodo");
-            return ResponseEntity.status(HttpStatus.OK).body(visitaService.filtrarVisitaPeriodo(filtroVisitaDto, pageable));
+            Page<VisitaModel> visitaModelPage = visitaService.filtrarVisitaPeriodo(filtroVisitaDto, pageable);
+            log.debug(visitaModelPage.getContent());
+            return ResponseEntity.status(HttpStatus.OK).body(visitaModelPage);
         }
 
 
