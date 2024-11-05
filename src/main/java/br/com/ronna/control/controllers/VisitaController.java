@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @RestController
 @Log4j2
@@ -65,6 +66,20 @@ public class VisitaController {
         }
     }
 
+    @PostMapping("/analise")
+    public ResponseEntity<Object> analiseVisitas(@RequestBody PeriodoDto periodoDto) {
+        log.debug("Analisando visitas...");
+        log.debug("Periodo de análise: {}", periodoDto);
+        return ResponseEntity.status(HttpStatus.OK).body(visitaService.analiseVisitas(periodoDto.getPeriodoInicio(), periodoDto.getPeriodoFinal()));
+    }
+
+    @PostMapping("/contagem")
+    public ResponseEntity<Object> contagemVisitas(@RequestBody PeriodoDto periodoDto) {
+        log.debug("Contando visitas...");
+        log.debug("Periodo de contagem: {}", periodoDto);
+        return ResponseEntity.status(HttpStatus.OK).body(visitaService.contarVisitasPorCliente(periodoDto.getPeriodoInicio(), periodoDto.getPeriodoFinal()).stream().limit(5).collect(Collectors.toList()));
+    }
+
     @PostMapping("/funcionario/{funcionarioId}")
     public ResponseEntity<Object> buscaVisitaFuncionario(@PathVariable (value = "funcionarioId")UUID funcionarioId,
                                                          @PageableDefault(page = 0, size = 50, sort = "visitaInicio", direction = Sort.Direction.ASC)Pageable pageable
@@ -100,12 +115,9 @@ public class VisitaController {
         log.debug("Criação de nova visita...");
         log.debug("Visita: {}", visitaDto);
 
-        // Ajusta o Horário recebido do navegador para o GMT-3
-        // visitaModel.setVisitaInicio(visitaDto.getVisitaInicio().minusHours(3));
-        // visitaModel.setVisitaFinal(visitaDto.getVisitaFinal().minusHours(3));
 
-        visitaModel.setVisitaInicio(visitaDto.getVisitaInicio());
-        visitaModel.setVisitaFinal(visitaDto.getVisitaFinal());
+        visitaModel.setVisitaInicio(visitaDto.getVisitaInicio().atZone(ZoneId.of("UTC")).toLocalDateTime());
+        visitaModel.setVisitaFinal(visitaDto.getVisitaFinal().atZone(ZoneId.of("UTC")).toLocalDateTime());
         visitaModel.setVisitaRemoto(visitaDto.isVisitaRemoto());
         visitaModel.setVisitaTotalAbono(visitaDto.getVisitaTotalAbono());
         visitaModel.setVisitaValorProdutos(visitaDto.getVisitaValorProdutos());
@@ -163,7 +175,8 @@ public class VisitaController {
 
         BeanUtils.copyProperties(visitaDto, visitaModelOptional.get());
 
-
+        visitaModelOptional.get().setVisitaInicio(visitaDto.getVisitaInicio().atZone(ZoneId.of("UTC")).toLocalDateTime());
+        visitaModelOptional.get().setVisitaFinal(visitaDto.getVisitaFinal().atZone(ZoneId.of("UTC")).toLocalDateTime());
         var clienteModel = clienteService.findById(visitaDto.getCliente());
         visitaModelOptional.get().setCliente(clienteModel.get());
         if(visitaDto.getLocal() != null){

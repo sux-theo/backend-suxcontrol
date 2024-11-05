@@ -1,5 +1,6 @@
 package br.com.ronna.control.repositories;
 
+import br.com.ronna.control.dtos.ClienteVisitasDto;
 import br.com.ronna.control.models.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -60,6 +61,9 @@ public interface VisitaRepository extends JpaRepository<VisitaModel, UUID>, JpaS
     @Query(value = "SELECT * FROM tb_visitas WHERE visita_inicio BETWEEN :inicio AND :fim", nativeQuery = true)
     Page<VisitaModel> filtrarVisitaPeriodo(LocalDateTime inicio, LocalDateTime fim, Pageable pageable);
 
+   @Query(value = "SELECT count(*) FROM tb_visitas WHERE visita_inicio >= :inicio AND visita_final <= :fim", nativeQuery = true)
+    Long countTotalVisitas(LocalDateTime inicio, LocalDateTime fim);
+
 
 
     @Query(value = "SELECT v.* FROM tb_visitas v " +
@@ -76,4 +80,12 @@ public interface VisitaRepository extends JpaRepository<VisitaModel, UUID>, JpaS
     Page<VisitaModel> filtrarVisitaFuncionarioEPeriodo(UUID funcionarioId, LocalDateTime visitaInicio, LocalDateTime visitaFinal, Pageable pageable);
 
     Set<VisitaModel> findVisitaModelByFechamento(FechamentoModel fechamentoModel);
+
+    @Query("SELECT new br.com.ronna.control.dtos.ClienteVisitasDto(v.cliente, COUNT(v)) " +
+            "FROM VisitaModel v " +
+            "WHERE v.visitaInicio BETWEEN :inicio AND :fim " +
+            "GROUP BY v.cliente.clienteId " +
+            "ORDER BY COUNT(v) DESC")
+    Set<ClienteVisitasDto> contarVisitasPorCliente(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
+
 }
