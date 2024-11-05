@@ -161,10 +161,9 @@ public class VisitaController {
         visitaModel.setVisitaTotalHoras(calculoHoras.diferencaInicioFim(visitaModel.getVisitaInicio(), visitaModel.getVisitaFinal()));
 
         log.debug("Visita criada: {}", visitaModel);
+        visitaService.save(visitaModel);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(visitaModel);
-        // visitaService.save(visitaModel);
-        // log.debug(visitaModel);
-        // return ResponseEntity.status(HttpStatus.CREATED).body(visitaModel);
     }
 
     @PutMapping("/{visitaId}")
