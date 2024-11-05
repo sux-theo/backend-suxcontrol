@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @RestController
 @Log4j2
@@ -63,6 +64,20 @@ public class VisitaController {
         } else {
             return ResponseEntity.status(HttpStatus.OK).body(visitaModelOptional.get());
         }
+    }
+
+    @PostMapping("/analise")
+    public ResponseEntity<Object> analiseVisitas(@RequestBody PeriodoDto periodoDto) {
+        log.debug("Analisando visitas...");
+        log.debug("Periodo de análise: {}", periodoDto);
+        return ResponseEntity.status(HttpStatus.OK).body(visitaService.analiseVisitas(periodoDto.getPeriodoInicio(), periodoDto.getPeriodoFinal()));
+    }
+
+    @PostMapping("/contagem")
+    public ResponseEntity<Object> contagemVisitas(@RequestBody PeriodoDto periodoDto) {
+        log.debug("Contando visitas...");
+        log.debug("Periodo de contagem: {}", periodoDto);
+        return ResponseEntity.status(HttpStatus.OK).body(visitaService.contarVisitasPorCliente(periodoDto.getPeriodoInicio(), periodoDto.getPeriodoFinal()).stream().limit(5).collect(Collectors.toList()));
     }
 
     @PostMapping("/funcionario/{funcionarioId}")
