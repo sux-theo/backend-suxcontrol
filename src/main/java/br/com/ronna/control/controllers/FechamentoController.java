@@ -162,7 +162,11 @@ public class FechamentoController {
                     double totalHoras = 0.0;
                     double totalHorasRemoto = 0.0;
                     double totalProdutos = 0.0;
+
                     for (VisitaModel visitaModel : setVisitas) {
+                        if (visitaModel.getVisitaTotalAbono() == null){
+                            visitaModel.setVisitaTotalAbono(0.0);
+                        }
                         totalProdutos = totalProdutos + visitaModel.getVisitaValorProdutos();
                         if (visitaModel.isVisitaRemoto()) {
                             totalHorasRemoto = totalHorasRemoto + (visitaModel.getVisitaTotalHoras() - visitaModel.getVisitaTotalAbono());
@@ -219,6 +223,9 @@ public class FechamentoController {
                 double totalProdutos = 0.0;
                 for (VisitaModel visitaModel : setVisitas) {
                     totalProdutos = totalProdutos + visitaModel.getVisitaValorProdutos();
+                    if(visitaModel.getVisitaTotalAbono() == null){
+                        visitaModel.setVisitaTotalAbono(0.0);
+                    }
                     if (visitaModel.isVisitaRemoto()) {
                         totalHorasRemoto = totalHorasRemoto + (visitaModel.getVisitaTotalHoras() - visitaModel.getVisitaTotalAbono());
                     } else {
