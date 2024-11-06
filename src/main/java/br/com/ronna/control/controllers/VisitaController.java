@@ -111,13 +111,15 @@ public class VisitaController {
 
     @PostMapping("/novo")
     public ResponseEntity<Object> criarVisita(@RequestBody VisitaDto visitaDto) {
+        LocalDateTime visitaInicioUtc = visitaDto.getVisitaInicio().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+        LocalDateTime visitaFinalUtc = visitaDto.getVisitaFinal().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
         var visitaModel = new VisitaModel();
         log.debug("Criação de nova visita...");
         log.debug("Visita: {}", visitaDto);
 
 
-        visitaModel.setVisitaInicio(visitaDto.getVisitaInicio().atZone(ZoneId.of("UTC")).toLocalDateTime());
-        visitaModel.setVisitaFinal(visitaDto.getVisitaFinal().atZone(ZoneId.of("UTC")).toLocalDateTime());
+        visitaModel.setVisitaInicio(visitaInicioUtc);
+        visitaModel.setVisitaFinal(visitaFinalUtc);
         visitaModel.setVisitaRemoto(visitaDto.isVisitaRemoto());
         visitaModel.setVisitaTotalAbono(visitaDto.getVisitaTotalAbono());
         visitaModel.setVisitaValorProdutos(visitaDto.getVisitaValorProdutos());
@@ -160,7 +162,7 @@ public class VisitaController {
 
         visitaModel.setVisitaTotalHoras(calculoHoras.diferencaInicioFim(visitaModel.getVisitaInicio(), visitaModel.getVisitaFinal()));
 
-        log.debug("Visita criada: {}", visitaModel);
+        log.error("Visita criada: {}", visitaModel);
         visitaService.save(visitaModel);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(visitaModel);
