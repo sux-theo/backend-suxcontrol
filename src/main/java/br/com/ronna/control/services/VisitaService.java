@@ -48,4 +48,6 @@ public interface VisitaService {
     Long analiseVisitas(LocalDateTime periodoInicio, LocalDateTime periodoFinal);
 
     Set<ClienteVisitasDto> contarVisitasPorCliente(LocalDateTime periodoInicio, LocalDateTime periodoFinal);
+
+    Double visitasComValor(Pageable pageable);
 }

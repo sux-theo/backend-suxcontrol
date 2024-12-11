@@ -6,6 +6,7 @@ import br.com.ronna.control.dtos.VisitaDto;
 import br.com.ronna.control.models.FechamentoModel;
 import br.com.ronna.control.models.FuncionarioModel;
 import br.com.ronna.control.models.VisitaModel;
+import br.com.ronna.control.models.VisitaValorModel;
 import br.com.ronna.control.services.*;
 import br.com.ronna.control.utils.CalculoHoras;
 import lombok.extern.log4j.Log4j2;
@@ -249,6 +250,19 @@ public class VisitaController {
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro com o filtro, preencha mais valores e tente novamente.");
     }
+
+    // visitas do mes atual com valor total
+    @GetMapping("/visitascomvalor")
+    public ResponseEntity<Object> getVisitasComValor(@PageableDefault(page = 0, size = 600, sort = "visita_inicio", direction = Sort.Direction.ASC) Pageable pageable){
+
+        Double valorTotalVisitas = visitaService.visitasComValor(pageable);
+
+        log.error("Valor total das visitas: {}", valorTotalVisitas);
+
+        return ResponseEntity.status(HttpStatus.OK).body(valorTotalVisitas);
+    }
+
+
 
     // TODO: Mapeamento de endpoint para o fechamento. (Verificar)
     @GetMapping("/clientelocal/{clienteLocalId}")

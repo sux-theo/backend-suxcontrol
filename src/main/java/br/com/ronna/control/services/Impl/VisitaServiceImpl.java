@@ -3,6 +3,7 @@ package br.com.ronna.control.services.Impl;
 import br.com.ronna.control.dtos.ClienteVisitasDto;
 import br.com.ronna.control.dtos.FiltroVisitaDto;
 import br.com.ronna.control.models.*;
+import br.com.ronna.control.repositories.ContratoRepository;
 import br.com.ronna.control.repositories.VisitaRepository;
 import br.com.ronna.control.services.VisitaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +17,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class VisitaServiceImpl implements VisitaService {
 
     @Autowired
     VisitaRepository visitaRepository;
+    @Autowired
+    private ContratoRepository contratoRepository;
 
     @Override
     public Optional<VisitaModel> findById(UUID visitaId) {
@@ -92,6 +96,30 @@ public class VisitaServiceImpl implements VisitaService {
     @Override
     public Set<ClienteVisitasDto> contarVisitasPorCliente(LocalDateTime periodoInicio, LocalDateTime periodoFinal) {
         return visitaRepository.contarVisitasPorCliente(periodoInicio, periodoFinal);
+    }
+
+    @Override
+    public Double visitasComValor(Pageable pageable) {
+        LocalDateTime periodoInicio = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime periodoFinal = LocalDateTime.now().withDayOfMonth(LocalDateTime.now().toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+
+        Page<VisitaModel> visitasPage = visitaRepository.filtrarVisitaPeriodo(periodoInicio, periodoFinal, pageable);
+
+        AtomicReference<Double> valorTotal = new AtomicReference<>(0.0);
+        contratoRepository.findAll().forEach(contratoModel -> {
+            visitasPage.forEach(visitaModel -> {
+                if (visitaModel.getCliente().getClienteId().equals(contratoModel.getCliente().getClienteId())) {
+                    if (visitaModel.isVisitaRemoto()) {
+                        valorTotal.updateAndGet(v -> v + contratoModel.getContratoValorRemoto());
+                    } else {
+                        valorTotal.updateAndGet(v -> v + contratoModel.getContratoValorVisita());
+                    }
+                }
+            });
+        });
+        System.out.println("Valor Total: " + valorTotal.get());
+
+        return valorTotal.get();
     }
 
     @Override
