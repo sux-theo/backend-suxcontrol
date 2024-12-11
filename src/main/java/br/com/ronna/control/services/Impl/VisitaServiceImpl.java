@@ -110,9 +110,9 @@ public class VisitaServiceImpl implements VisitaService {
             visitasPage.forEach(visitaModel -> {
                 if (visitaModel.getCliente().getClienteId().equals(contratoModel.getCliente().getClienteId())) {
                     if (visitaModel.isVisitaRemoto()) {
-                        valorTotal.updateAndGet(v -> v + contratoModel.getContratoValorRemoto());
+                        valorTotal.updateAndGet(v -> (v + contratoModel.getContratoValorRemoto() * visitaModel.getVisitaTotalHoras()) + visitaModel.getVisitaValorProdutos());
                     } else {
-                        valorTotal.updateAndGet(v -> v + contratoModel.getContratoValorVisita());
+                        valorTotal.updateAndGet(v -> (v + contratoModel.getContratoValorVisita() * visitaModel.getVisitaTotalHoras()) + visitaModel.getVisitaValorProdutos());
                     }
                 }
             });
