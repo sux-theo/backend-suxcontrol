@@ -99,28 +99,38 @@ public class VisitaServiceImpl implements VisitaService {
     }
 
     @Override
-    public Double visitasComValor(Pageable pageable) {
+    public VisitaValorModel visitasComValor(Pageable pageable) {
         LocalDateTime periodoInicio = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
         LocalDateTime periodoFinal = LocalDateTime.now().withDayOfMonth(LocalDateTime.now().toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59).withNano(999999999);
 
         Page<VisitaModel> visitasPage = visitaRepository.filtrarVisitaPeriodo(periodoInicio, periodoFinal, pageable);
-
-        AtomicReference<Double> valorTotal = new AtomicReference<>(0.0);
-        contratoRepository.findAll().forEach(contratoModel -> {
-            visitasPage.forEach(visitaModel -> {
-                if (visitaModel.getCliente().getClienteId().equals(contratoModel.getCliente().getClienteId())) {
-                    if (visitaModel.isVisitaRemoto()) {
-                        valorTotal.updateAndGet(v -> (v + contratoModel.getContratoValorRemoto() * visitaModel.getVisitaTotalHoras()) + visitaModel.getVisitaValorProdutos());
+        VisitaValorModel valor = new VisitaValorModel();
+        
+        double valorServicos = 0.0;
+        double valorProdutos = 0.0;
+        for(ContratoModel contrato: contratoRepository.findAll()) {
+            for(VisitaModel visita: visitasPage) {
+                if(visita.getCliente().getClienteId().equals(contrato.getCliente().getClienteId())) {
+                    valorProdutos += visita.getVisitaValorProdutos();
+                    if(visita.isVisitaRemoto()) {
+                        valorServicos += (contrato.getContratoValorRemoto() * visita.getVisitaTotalHoras());
                     } else {
-                        valorTotal.updateAndGet(v -> (v + contratoModel.getContratoValorVisita() * visitaModel.getVisitaTotalHoras()) + visitaModel.getVisitaValorProdutos());
+                        valorServicos += (contrato.getContratoValorVisita() * visita.getVisitaTotalHoras());
                     }
                 }
-            });
-        });
-        System.out.println("Valor Total: " + valorTotal.get());
+            }
+        }
 
-        return valorTotal.get();
+        valor.setValorServico(valorServicos);
+        valor.setValorProduto(valorProdutos);
+
+        return valor;
     }
+
+
+
+
+
 
     @Override
     public Page<VisitaModel> findAll(Pageable pageable) {

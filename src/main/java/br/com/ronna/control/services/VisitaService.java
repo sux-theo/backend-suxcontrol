@@ -49,5 +49,6 @@ public interface VisitaService {
 
     Set<ClienteVisitasDto> contarVisitasPorCliente(LocalDateTime periodoInicio, LocalDateTime periodoFinal);
 
-    Double visitasComValor(Pageable pageable);
+    VisitaValorModel visitasComValor(Pageable pageable);
+
 }
