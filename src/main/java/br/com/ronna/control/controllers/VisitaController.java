@@ -255,11 +255,12 @@ public class VisitaController {
     @GetMapping("/visitascomvalor")
     public ResponseEntity<Object> getVisitasComValor(@PageableDefault(page = 0, size = 600, sort = "visita_inicio", direction = Sort.Direction.ASC) Pageable pageable){
 
-        Double valorTotalVisitas = visitaService.visitasComValor(pageable);
+        VisitaValorModel valor = visitaService.visitasComValor(pageable);
 
-        log.error("Valor total das visitas: {}", valorTotalVisitas);
+        log.error("Valor total serviços: {}", valor.getValorServico());
+        log.error("Valor total produtos: {}", valor.getValorProduto());
 
-        return ResponseEntity.status(HttpStatus.OK).body(valorTotalVisitas);
+        return ResponseEntity.status(HttpStatus.OK).body(valor);
     }
 
 
