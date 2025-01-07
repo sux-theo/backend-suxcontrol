@@ -47,4 +47,9 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     public Page<FuncionarioModel> findAll(Pageable pageable) {
         return funcionarioRepository.findAll(pageable);
     }
+
+    @Override
+    public Page<FuncionarioModel> findAllAtivos(Pageable pageable) {
+        return funcionarioRepository.findAllByFuncionarioStatus(pageable);
+    }
 }
