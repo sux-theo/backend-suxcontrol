@@ -53,6 +53,11 @@ public class VisitaServiceImpl implements VisitaService {
     }
 
     @Override
+    public Set<VisitaModel> provaVisitas(ClienteModel clienteModel, LocalDateTime periodoInicio, LocalDateTime periodoFinal) {
+        return visitaRepository.provaVisitas(clienteModel.getClienteId(), periodoInicio, periodoFinal);
+    }
+
+    @Override
     public Set<VisitaModel> setVisitasPorLocalEPeriodo(UUID localId, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal) {
         return visitaRepository.listarVisitasPorClienteLocalEPeriodoFechamento(localId, fechamentoInicio, fechamentoFinal);
     }

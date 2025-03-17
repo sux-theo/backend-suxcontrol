@@ -31,6 +31,8 @@ public interface VisitaService {
 
     Set<VisitaModel> listarVisitasPorClienteEPeriodoFechamento(ClienteModel clienteModel, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal);
 
+    Set<VisitaModel> provaVisitas(ClienteModel clienteModel, LocalDateTime periodoInicio, LocalDateTime periodoFinal);
+
     Set<VisitaModel> setVisitasPorLocalEPeriodo(UUID localId, LocalDateTime fechamentoInicio, LocalDateTime fechamentoFinal);
 
     Page<VisitaModel> filtrarVisitaClienteFuncionarioEPeriodo(FiltroVisitaDto filtroVisitaDto, Pageable pageable);

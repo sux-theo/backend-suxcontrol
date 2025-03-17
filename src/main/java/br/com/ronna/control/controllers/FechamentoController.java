@@ -53,7 +53,7 @@ public class FechamentoController {
             sort = "fechamento_inicio", direction = Sort.Direction.DESC) Pageable pageable) {
 
         log.info("Listando todos os fechamentos...");
-        log.info("Pageable: {}", pageable.toString());
+        // log.info("Pageable: {}", pageable.toString());
         FiltroFechamentoDto filtroFechamentoDto = new FiltroFechamentoDto();
         filtroFechamentoDto.setInicio(LocalDateTime.now().minusMonths(1).withDayOfMonth(1).withHour(3).withMinute(0).withSecond(0).withNano(0));
         filtroFechamentoDto.setFim(LocalDateTime.now().withDayOfMonth(1).withHour(2).withMinute(59).withSecond(0).withNano(0));
@@ -76,6 +76,7 @@ public class FechamentoController {
     @GetMapping("/cliente/{clienteId}")
     public ResponseEntity<Object> listarFechamentosCliente(@PathVariable UUID clienteId, @PageableDefault(page = 0, size = 100, sort = "fechamentoInicio",
             direction = Sort.Direction.ASC) Pageable pageable) {
+        log.info("Listando fechamentos do cliente: {}", clienteId);
         Optional<ClienteModel> clienteModelOptional = clienteService.findById(clienteId);
         if (!clienteModelOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Cliente selecionado não encontrado");
@@ -87,6 +88,7 @@ public class FechamentoController {
     public ResponseEntity<Object> listarFechamentosClienteLocal(@PathVariable(value = "clienteLocalId")UUID clienteLocalId,
                                                                 @PageableDefault(page = 0, size = 100,
                                                                         sort = "fechamentoInicio", direction = Sort.Direction.ASC)Pageable pageable) {
+        log.info("Listando fechamentos do cliente local: {}", clienteLocalId);
         var localModelOptional = localService.findById(clienteLocalId);
         if(!localModelOptional.isPresent()) {
             log.info("Local do cliente {} não encontrado!", clienteLocalId);
@@ -115,12 +117,11 @@ public class FechamentoController {
     @PostMapping("/new")
     public ResponseEntity<Object> novoFechamento(@RequestBody FechamentoNovoDto fechamentoNovoDto) {
         log.debug(fechamentoNovoDto.toString());
+        log.info("Criando novo fechamento...");
         LocalDateTime fechamentoInicioUtc = fechamentoNovoDto.getFechamentoInicio().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
         LocalDateTime fechamentoFinalUtc = fechamentoNovoDto.getFechamentoFinal().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
 
-
         // Verificar
-
         try {
             Set<ClienteModel> clientesFechamentosSeparados = new HashSet<>();
             Set<ClienteModel> clientesFechamentosJuntos = new HashSet<>();
@@ -199,6 +200,7 @@ public class FechamentoController {
 
             //Criar Fechamento por Cliente
             for (ClienteModel clienteModel : clientesFechamentosJuntos) {
+                log.info("Cliente: {}", clienteModel.getClienteNome());
                 Optional<ContratoModel> contratoModelOptional = contratoService.findContratoModelByCliente(clienteModel);
                 if (!contratoModelOptional.isPresent()) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Sem contrato existente para o cliente: " + clienteModel.getClienteNome());
@@ -215,6 +217,7 @@ public class FechamentoController {
                 Set<VisitaModel> setVisitas = visitaService.listarVisitasPorClienteEPeriodoFechamento(clienteModel,
                         fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
                 fechamentoModel.setVisitas(setVisitas);
+                log.info("SetVisitas: {}", setVisitas);
 
                 log.info("FechamentoInicio (UTC): {}", fechamentoInicioUtc);
                 log.info("FechamentoFinal (UTC): {}", fechamentoFinalUtc);
@@ -245,6 +248,7 @@ public class FechamentoController {
                 log.info("FechamentoInicio: {}", fechamentoModel.getFechamentoInicio());
                 log.info("FechamentoFinal: {}", fechamentoModel.getFechamentoFinal());
                 log.info("FechamentoClienteId: {}", clienteModel.getClienteId());
+                log.info("FechamentoClienteNome: {}", clienteModel.getClienteNome());
                 Optional<FechamentoModel> fechamentoModelOptionalExistente =
                         fechamentoService.findFechamentoModelsByClienteIdAndPeriodo(clienteModel.getClienteId(),
                                 fechamentoInicioUtc, fechamentoFinalUtc);
@@ -270,6 +274,34 @@ public class FechamentoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno: Ocorreu um erro ao criar o fechamento. " +
                     "Por favor, tente novamente.");
         }
+    }
+
+    @GetMapping("/prova")
+    public ResponseEntity<Object> prova(@RequestBody ProvaDto provaDto) {
+        log.info("Prova: {}", provaDto);
+        Optional<ClienteModel> clienteModelOptional = clienteService.findById(UUID.fromString(provaDto.getClienteId()));
+        if (!clienteModelOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Cliente não encontrado!");
+        }
+        Set<VisitaModel> setVisitas = visitaService.provaVisitas(clienteModelOptional.get(),
+                provaDto.getFechamentoInicio(), provaDto.getFechamentoFinal());
+        log.info("SetVisitas: {}", setVisitas);
+
+        return ResponseEntity.status(HttpStatus.OK).body(setVisitas);
+    }
+
+    @GetMapping("/prova2")
+    public ResponseEntity<Object> prova2(@RequestBody ProvaDto provaDto) {
+        log.info("Prova: {}", provaDto);
+        Optional<ClienteModel> clienteModelOptional = clienteService.findById(UUID.fromString(provaDto.getClienteId()));
+        if (!clienteModelOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Cliente não encontrado!");
+        }
+        Set<VisitaModel> setVisitas = visitaService.listarVisitasPorClienteEPeriodoFechamento(clienteModelOptional.get(),
+                provaDto.getFechamentoInicio(), provaDto.getFechamentoFinal());
+        log.info("SetVisitas: {}", setVisitas);
+
+        return ResponseEntity.status(HttpStatus.OK).body(setVisitas);
     }
 
     @PostMapping("/filtro")
