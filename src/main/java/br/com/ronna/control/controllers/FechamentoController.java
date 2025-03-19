@@ -6,6 +6,11 @@ import br.com.ronna.control.models.*;
 import br.com.ronna.control.services.*;
 import br.com.ronna.control.utils.CalculoHoras;
 import lombok.extern.log4j.Log4j2;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -14,14 +19,19 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.var;
 
 import javax.swing.text.html.Option;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RestController
@@ -138,7 +148,6 @@ public class FechamentoController {
                 }
             }
 
-            //TODO: ajustar o fechamento por local
             //Criar Fechamento por Local
             for (ClienteModel clienteModel : clientesFechamentosSeparados) {
                 Optional<ContratoModel> contratoModelOptional = contratoService.findContratoModelByCliente(clienteModel);
@@ -192,8 +201,6 @@ public class FechamentoController {
                         fechamentoModel.setFechamentoId(fechamentoModelOptionalExistente.get().getFechamentoId());
                         fechamentoService.delete(fechamentoModelOptionalExistente.get());
                     }
-
-
                     fechamentoService.save(fechamentoModel);
                 }
             }
@@ -218,7 +225,6 @@ public class FechamentoController {
                         fechamentoNovoDto.getFechamentoInicio(), fechamentoNovoDto.getFechamentoFinal());
                 fechamentoModel.setVisitas(setVisitas);
                 log.info("SetVisitas: {}", setVisitas);
-
                 log.info("FechamentoInicio (UTC): {}", fechamentoInicioUtc);
                 log.info("FechamentoFinal (UTC): {}", fechamentoFinalUtc);
 
@@ -259,11 +265,8 @@ public class FechamentoController {
                     fechamentoService.delete(fechamentoModelOptionalExistente.get());
                 }
                 fechamentoService.save(fechamentoModel);
-
                 log.debug("Fechamento por cliente novo: {}", fechamentoModel.toString());
-
             }
-
             return ResponseEntity.status(HttpStatus.OK).body("Fechamentos gerados com sucesso! ");
         } catch (DataIntegrityViolationException e) {
             log.error("Erro: de integridade: {}", e.getMessage());
@@ -288,6 +291,70 @@ public class FechamentoController {
         log.info("SetVisitas: {}", setVisitas);
 
         return ResponseEntity.status(HttpStatus.OK).body(setVisitas);
+    }
+
+
+    @GetMapping("/exportar-visitas")
+    public ResponseEntity<byte[]> exportarVisitasParaExcel(@RequestBody ProvaDto provaDto) throws IOException {
+        Optional<ClienteModel> clienteModelOptional = clienteService.findById(UUID.fromString(provaDto.getClienteId()));
+
+        Set<VisitaModel> visitas = visitaService.provaVisitas(clienteModelOptional.get(),
+                provaDto.getFechamentoInicio(), provaDto.getFechamentoFinal());
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Visitas");
+
+        // Cabeçalho
+        Row headerRow = sheet.createRow(0);
+        String[] colunas = {
+                "ID", "Data Início", "Data Fim", "Descrição",
+                "Cliente", "Valor Produtos", "Total Horas"
+        };
+
+        for (int i = 0; i < colunas.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(colunas[i]);
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        // Preencher os dados
+        int rowIdx = 1;
+        for (VisitaModel visita : visitas) {
+            Row row = sheet.createRow(rowIdx++);
+
+            row.createCell(0).setCellValue(visita.getVisitaId().toString());
+            row.createCell(1).setCellValue(formatter.format(visita.getVisitaInicio()));
+            row.createCell(2).setCellValue(formatter.format(visita.getVisitaFinal()));
+            row.createCell(3).setCellValue(visita.getVisitaDescricao());
+            row.createCell(4).setCellValue(visita.getCliente().getClienteNome());
+
+            // Concatenar nomes dos funcionários
+            //String funcionarios = String.join(", ", visita.getFuncionarios().stream().map(FuncionarioDTO::getFuncionarioNome).toList());
+            //row.createCell(5).setCellValue(funcionarios);
+
+            row.createCell(6).setCellValue(visita.getVisitaValorProdutos());
+            row.createCell(7).setCellValue(visita.getVisitaTotalHoras());
+        }
+
+        // Ajustar o tamanho das colunas
+        for (int i = 0; i < colunas.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // Gerar o arquivo em memória
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        // Preparar resposta HTTP
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=visitas.xlsx");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(outputStream.toByteArray());
     }
 
     @GetMapping("/prova2")
@@ -342,97 +409,6 @@ public class FechamentoController {
             // Caso nenhum filtro seja fornecido
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nenhum filtro fornecido.");
         }
-
-    }
-
-    @PostMapping("/novo")
-    public ResponseEntity<Object> criarFechamento(@RequestBody FechamentoDto fechamentoDto) {
-        log.info("Criando novo fechamento: {}", fechamentoDto);
-
-        if (fechamentoDto.getCliente() == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: cliente não selecionado!");
-        }
-        Optional<ClienteModel> clienteModelOptional = clienteService.findById(fechamentoDto.getCliente());
-        if (!clienteModelOptional.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: cliente selecionado não encontrado!");
-        }
-        //Dados do contrato.
-        Optional<ContratoModel> contratoModelOptional = contratoService.findContratoModelByCliente(clienteModelOptional.get());
-        if(!contratoModelOptional.isPresent()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Contrato não encontrado para criação desse Fechamento!");
-        }
-        double totalHoras = 0.0;
-        double totalHorasRemoto = 0.0;
-        double totalProdutos = 0.0;
-        if (fechamentoDto.getClienteLocalId() != null && !fechamentoDto.getClienteLocalId().equals("")) {
-            //Fechamento separado por local
-            Optional<LocalModel> localModelOptional = localService.findById(fechamentoDto.getClienteLocalId());
-            if(!localModelOptional.isPresent()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Local selecionado não encontrado!");
-            }
-            Set<VisitaModel> visitaModels = visitaService.setVisitasPorLocalEPeriodo(localModelOptional.get().getLocalId(),
-                    fechamentoDto.getFechamentoInicio(), fechamentoDto.getFechamentoFinal());
-            if(visitaModels.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro: Não existem visitas para este cliente no período selecionado!");
-            }
-            //Somar os valores de produtos totais e total de horas das visitas. salvar valor final pelo valor cadastrado em contrato.
-            for(VisitaModel visitaModel : visitaModels){
-                totalProdutos = totalProdutos + visitaModel.getVisitaValorProdutos();
-                //valida acesso remoto para salvar o valor correto
-                if(visitaModel.isVisitaRemoto()) {
-                    totalHorasRemoto = totalHorasRemoto + visitaModel.getVisitaTotalHoras();
-                } else {
-                    totalHoras = totalHoras + visitaModel.getVisitaTotalHoras();
-                }
-            }
-            var fechamentoModel = new FechamentoModel();
-            fechamentoModel.setCliente(clienteModelOptional.get());
-            fechamentoModel.setLocal(localModelOptional.get());
-            fechamentoModel.setFechamentoInicio(fechamentoDto.getFechamentoInicio());
-            fechamentoModel.setFechamentoFinal(fechamentoDto.getFechamentoFinal());
-            fechamentoModel.setFechamentoValorProdutos(totalProdutos);
-            fechamentoModel.setFechamentoValorServicos( (totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
-                    ( totalHoras * contratoModelOptional.get().getContratoValorVisita() )  );
-            fechamentoModel.setVisitas(visitaModels);
-            fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("UTC")));
-            fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
-            fechamentoModel.setFechamentoStatus(FechamentoStatus.CRIADO);
-            fechamentoService.save(fechamentoModel);
-            log.debug("Fechamento separado por local criado com sucesso!");
-            return ResponseEntity.status(HttpStatus.CREATED).body(fechamentoModel);
-        } else {
-            // Fechamento por cliente todos os locais juntos.
-            Set<VisitaModel> visitaModels = visitaService.listarVisitasPorClienteEPeriodoFechamento(clienteModelOptional.get(),
-                    fechamentoDto.getFechamentoInicio(), fechamentoDto.getFechamentoFinal());
-            if(visitaModels.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro: Não existem visitas para este cliente no período selecionado!");
-            }
-            //Somar os valores de produtos totais e total de horas das visitas. salvar valor final pelo valor cadastrado em contrato.
-            for(VisitaModel visitaModel : visitaModels){
-                totalProdutos = totalProdutos + visitaModel.getVisitaValorProdutos();
-                //valida acesso remoto para salvar o valor correto
-                if(visitaModel.isVisitaRemoto()) {
-                    totalHorasRemoto = totalHorasRemoto + visitaModel.getVisitaTotalHoras();
-                } else {
-                    totalHoras = totalHoras + visitaModel.getVisitaTotalHoras();
-                }
-            }
-            var fechamentoModel = new FechamentoModel();
-            fechamentoModel.setCliente(clienteModelOptional.get());
-            fechamentoModel.setFechamentoInicio(fechamentoDto.getFechamentoInicio());
-            fechamentoModel.setFechamentoFinal(fechamentoDto.getFechamentoFinal());
-            fechamentoModel.setFechamentoValorProdutos(totalProdutos);
-            fechamentoModel.setFechamentoValorServicos( (totalHorasRemoto * contratoModelOptional.get().getContratoValorRemoto()) +
-                    ( totalHoras * contratoModelOptional.get().getContratoValorVisita() )  );
-            fechamentoModel.setVisitas(visitaModels);
-            fechamentoModel.setCreatedDate(LocalDateTime.now(ZoneId.of("UTC")));
-            fechamentoModel.setUpdatedDate(LocalDateTime.now(ZoneId.of("UTC")));
-            fechamentoModel.setFechamentoStatus(FechamentoStatus.CRIADO);
-            fechamentoService.save(fechamentoModel);
-            log.debug("Fechamento criado com sucesso!");
-            return ResponseEntity.status(HttpStatus.CREATED).body(fechamentoModel);
-        }
-
 
     }
 
