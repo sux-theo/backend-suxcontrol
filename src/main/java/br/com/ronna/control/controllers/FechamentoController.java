@@ -130,17 +130,17 @@ public class FechamentoController {
         log.info("Criando novo fechamento...");
         LocalDateTime fechamentoInicioUtc = fechamentoNovoDto.getFechamentoInicio().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
         LocalDateTime fechamentoFinalUtc = fechamentoNovoDto.getFechamentoFinal().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
-
-        // Verificar
         try {
             Set<ClienteModel> clientesFechamentosSeparados = new HashSet<>();
             Set<ClienteModel> clientesFechamentosJuntos = new HashSet<>();
 
+            // Percorre a listagem de clientes selecionados
             for (UUID clienteId : fechamentoNovoDto.getClientesSelecionados()) {
                 Optional<ClienteModel> clienteModelOptinal = clienteService.findById(clienteId);
                 if (!clienteModelOptinal.isPresent()) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: cliente selecionado não encontrado: " + clienteId);
                 }
+                // Verifica se o cliente tem fechamento separado ou não
                 if (clienteModelOptinal.get().isFechamentoSeparado()) {
                     clientesFechamentosSeparados.add(clienteModelOptinal.get());
                 } else {
@@ -150,11 +150,14 @@ public class FechamentoController {
 
             //Criar Fechamento por Local
             for (ClienteModel clienteModel : clientesFechamentosSeparados) {
+                log.info("Fechamento por local...");
+                log.info("Cliente: {}", clienteModel.getClienteNome());
                 Optional<ContratoModel> contratoModelOptional = contratoService.findContratoModelByCliente(clienteModel);
                 if (!contratoModelOptional.isPresent()) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Sem contrato existente para o cliente: " + clienteModel.getClienteNome());
                 }
                 List<LocalModel> listaLocais = localService.findAllByClienteClienteId(clienteModel.getClienteId());
+                // Percorre a listagem de locais do cliente
                 for (LocalModel localModel : listaLocais) {
                     FechamentoModel fechamentoModel = new FechamentoModel();
                     fechamentoModel.setCliente(clienteModel);
@@ -207,6 +210,7 @@ public class FechamentoController {
 
             //Criar Fechamento por Cliente
             for (ClienteModel clienteModel : clientesFechamentosJuntos) {
+                log.info("Fechamento por cliente...");
                 log.info("Cliente: {}", clienteModel.getClienteNome());
                 Optional<ContratoModel> contratoModelOptional = contratoService.findContratoModelByCliente(clienteModel);
                 if (!contratoModelOptional.isPresent()) {
@@ -234,6 +238,7 @@ public class FechamentoController {
                 double totalHorasRemoto = 0.0;
                 double totalProdutos = 0.0;
                 for (VisitaModel visitaModel : setVisitas) {
+                    log.info("VisitaModel: {}", visitaModel);
                     if(visitaModel.getVisitaValorProdutos() == null){
                         visitaModel.setVisitaValorProdutos(0.0);
                     }
