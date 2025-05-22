@@ -6,6 +6,7 @@ spring:
   datasource:
     #url: jdbc:postgresql://ep-raspy-haze-a5r2jrux-pooler.us-east-2.aws.neon.tech/control?user=control_owner&password=pd8laR5PsjGH&sslmode=require
     url: jdbc:postgresql://localhost/control?user=root&password=pass
+    #Teste
   jpa:
     hibernate:
       ddl-auto: update
