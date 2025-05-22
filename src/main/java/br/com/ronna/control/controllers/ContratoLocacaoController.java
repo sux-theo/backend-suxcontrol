@@ -183,9 +183,10 @@ public class ContratoLocacaoController {
 
     @GetMapping()
     public ResponseEntity<Object> findAll() {
+        log.debug("Listando todos os contratos de locação...");
         List<ContratoLocacaoModel> contratos = contratoLocacaoService.findAll();
         if (contratos.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nenhum contrato encontrado!");
+            return ResponseEntity.status(HttpStatus.OK).body("Nenhum contrato encontrado!");
         }
         return ResponseEntity.status(HttpStatus.OK).body(contratos);
     }

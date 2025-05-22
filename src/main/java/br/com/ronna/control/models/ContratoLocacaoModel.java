@@ -34,5 +34,6 @@ public class ContratoLocacaoModel {
 
     private LocalDateTime dataAtualizacao;
 
+    @Enumerated(EnumType.STRING)
     private ContratoLocacaoStatus status;
 }

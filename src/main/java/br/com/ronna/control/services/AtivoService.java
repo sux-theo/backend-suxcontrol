@@ -24,4 +24,6 @@ public interface AtivoService {
     boolean ativoHasContrato(UUID ativoId);
 
     boolean ativoInContrato(UUID ativoId, UUID contratoId);
+
+    List<AtivoModel> findAtivosNaoAlugados ();
 }

@@ -35,5 +35,6 @@ public class LocacaoAtivoModel {
 
     private String observacao;
 
+    @Enumerated(EnumType.STRING)
     private LocacaoAtivoStatus status;
 }

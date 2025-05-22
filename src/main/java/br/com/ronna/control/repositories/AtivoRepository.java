@@ -18,5 +18,12 @@ public interface AtivoRepository extends JpaRepository<AtivoModel, UUID>, JpaSpe
     Boolean ativoInContrato(@Param("ativoId") UUID ativoId, @Param("contratoId") UUID contratoId);
 
 
-    //List<AtivoModel> findAllByContratoContratoId(UUID contratoId);
+    @Query("SELECT a FROM AtivoModel a " +
+            "WHERE a.ativoId NOT IN (" +
+            "   SELECT la.ativo.ativoId " +
+            "   FROM LocacaoAtivoModel la " +
+            "   WHERE la.status = 'ALUGADO'" +
+            ")")
+    List<AtivoModel> findAtivosNaoAlugados();
+
 }
