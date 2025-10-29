@@ -123,6 +123,7 @@ public class VisitaController {
         visitaModel.setVisitaFinal(visitaFinalUtc);
         visitaModel.setVisitaRemoto(visitaDto.isVisitaRemoto());
         visitaModel.setVisitaTotalAbono(visitaDto.getVisitaTotalAbono());
+        visitaModel.setProdutos(visitaDto.getProdutos() != null ? new HashSet<>(visitaDto.getProdutos()) : null);
         visitaModel.setVisitaValorProdutos(visitaDto.getVisitaValorProdutos());
         visitaModel.setVisitaDescricao(visitaDto.getVisitaDescricao());
 

@@ -3,6 +3,7 @@ package br.com.ronna.control.dtos;
 import br.com.ronna.control.models.ClienteModel;
 import br.com.ronna.control.models.FuncionarioModel;
 import br.com.ronna.control.models.LocalModel;
+import br.com.ronna.control.models.ProdutoModel;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -30,5 +31,7 @@ public class VisitaDto {
     private UUID cliente;
 
     private UUID local;
+
+    private Set<ProdutoModel> produtos;
 
 }
