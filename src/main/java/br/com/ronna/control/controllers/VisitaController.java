@@ -123,6 +123,7 @@ public class VisitaController {
         visitaModel.setVisitaFinal(visitaFinalUtc);
         visitaModel.setVisitaRemoto(visitaDto.isVisitaRemoto());
         visitaModel.setVisitaTotalAbono(visitaDto.getVisitaTotalAbono());
+        visitaModel.setProdutos(visitaDto.getProdutos() != null ? new HashSet<>(visitaDto.getProdutos()) : null);
         visitaModel.setVisitaValorProdutos(visitaDto.getVisitaValorProdutos());
         visitaModel.setVisitaDescricao(visitaDto.getVisitaDescricao());
 
@@ -177,10 +178,14 @@ public class VisitaController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: Visita não encontrada!");
         }
 
-        BeanUtils.copyProperties(visitaDto, visitaModelOptional.get());
+        LocalDateTime visitaInicioUtc = visitaDto.getVisitaInicio().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+        LocalDateTime visitaFinalUtc = visitaDto.getVisitaFinal().atZone(ZoneId.of("America/Sao_Paulo")).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
 
-        visitaModelOptional.get().setVisitaInicio(visitaDto.getVisitaInicio().atZone(ZoneId.of("UTC")).toLocalDateTime());
-        visitaModelOptional.get().setVisitaFinal(visitaDto.getVisitaFinal().atZone(ZoneId.of("UTC")).toLocalDateTime());
+        BeanUtils.copyProperties(visitaDto, visitaModelOptional.get());
+        visitaModelOptional.get().setVisitaInicio(visitaInicioUtc);
+        visitaModelOptional.get().setVisitaFinal(visitaFinalUtc);
+        // visitaModelOptional.get().setVisitaInicio(visitaDto.getVisitaInicio().atZone(ZoneId.of("UTC")).toLocalDateTime());
+        // visitaModelOptional.get().setVisitaFinal(visitaDto.getVisitaFinal().atZone(ZoneId.of("UTC")).toLocalDateTime());
         var clienteModel = clienteService.findById(visitaDto.getCliente());
         visitaModelOptional.get().setCliente(clienteModel.get());
         if(visitaDto.getLocal() != null){

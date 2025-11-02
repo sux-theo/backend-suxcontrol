@@ -54,4 +54,9 @@ public class AtivoServiceImpl implements AtivoService {
         return ativoRepository.ativoInContrato(ativoId, contratoId);
     }
 
+    @Override
+    public List<AtivoModel> findAtivosNaoAlugados() {
+        return ativoRepository.findAtivosNaoAlugados();
+    }
+
 }

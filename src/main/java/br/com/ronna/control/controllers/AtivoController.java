@@ -118,4 +118,11 @@ public class AtivoController {
         ativoService.save(ativoModel);
         return ResponseEntity.status(HttpStatus.OK).body(ativoModel);
     }
+
+    @GetMapping("/disponiveis")
+    public ResponseEntity<List<AtivoModel>> buscarAtivosDisponiveis() {
+        log.debug("Listando ativos disponíveis...");
+        List<AtivoModel> ativoModelList = ativoService.findAtivosNaoAlugados();
+        return ResponseEntity.status(HttpStatus.OK).body(ativoModelList);
+    }
 }

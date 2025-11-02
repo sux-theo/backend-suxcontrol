@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title
+            th:text="'Fatura ' + ${f.getClienteNome()} + '-' + ${f.getClienteLocal()}"
+    >
+        Fatura
+    </title>
+    <style>
+        /* Página A4 fixa */
+        @page {
+            size: A4;
+            margin: 210px 13mm 150px 13mm;
+
+            @top-center {
+                content: element(header);
+            }
+            @bottom-center {
+                content: element(footer);
+            }
+        }
+        html, body {
+            font-family: DejaVu Sans, Arial, Helvetica, sans-serif;
+            font-size: 11pt;
+            color: #222;
+        }
+        .page-header {
+            position: running(header); /* Define o nome como "header" */
+            display: block;
+
+            /* O resto do seu estilo (altura, borda, etc.) */
+            height: 200px;
+            /* background-color: #f9f9f9; */
+            border-bottom: 1px solid #999;
+            text-align: center;
+            /* padding: 10px; */
+            box-sizing: border-box;
+        }
+        .logo {
+            width: 190mm;
+            height: auto;
+        }
+        .header-empresa {
+            margin-top: 5px;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+        .titulo {
+            font-size: 16pt;
+            font-weight: bold;
+        }
+
+        .page-footer {
+            position: running(footer); /* Define o nome como "footer" */
+            display: block;
+
+            /* O resto do seu estilo (altura, borda, etc.) */
+            height: 140px;
+            /* border-top: 1px solid #999; */
+            text-align: center;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0 16px 0;
+        }
+        th, td {
+            border: 1px solid #bbb;
+            padding: 6px 8px;
+            vertical-align: top;
+        }
+        th {
+            background: #efefef;
+            text-align: left;
+        }
+        thead {
+            display: table-header-group;
+        }
+
+        tfoot {
+            display: table-footer-group;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
+        td,th {
+            page-break-inside: avoid;
+        }
+        .page-break { page-break-before: always; }
+
+        .totais { width: 40%; margin-left: auto; background-color: #aaaaaa; border-radius: 8px; }
+        .totais td { border: none; }
+        .totais .lbl { text-align: right; padding-right: 8px; }
+        .totais .val { text-align: right; font-weight: bold; }
+
+        .valoresTotais {
+            margin-right: 0;
+            text-align: right;
+            background-color: #aaaaaa;
+            padding: 8px 8px;
+            font-size: 12pt;
+            font-weight: bold;
+            border-radius: 8px;
+            margin-left: 55%;
+        }
+    </style>
+</head>
+<body>
+<header class="page-header">
+    <img th:if="${cabecalho != null and cabecalho !=''}"
+         th:src=" 'data:image/png;base64,' + ${cabecalho} "
+         alt="Logo do Cabeçalho" class="logo"/>
+    <div class="header-empresa">
+        <span class="titulo">SUXBERGER SOLUÇÕES</span>
+        <div>06.862.620/0001-16</div>
+        <div>SOF NORTE Qd 4 Conj G Lote 7, Sala 65 - Brasília - DF - CEP 70634-470</div>
+        <div>Telefone: (61) 3036-5668 | Email: financeiro@suxbeger.com.br | suxberger.com.br</div>
+    </div>
+</header>
+<footer class="page-footer">
+    <div>
+        <img
+            class="logo"
+            th:if="${rodape != null and rodape != ''}"
+            th:src="'data:image/png;base64,' + ${rodape}"
+            alt="Logo do Rodapé"
+        />
+    </div>
+</footer>
+
+<main>
+    <span class="titulo">Fechamento <span th:text="${f.getClienteNome() + f.getClienteLocal()}"></span></span>
+    <p>Referência:
+        <span th:text="${f.getFechamentoInicio() != null ? #temporals.format(f.getFechamentoInicio(), 'dd/MM/yyyy') : ''}"></span>
+    à  <span th:text="${f.getFechamentoFinal() != null ? #temporals.format(f.getFechamentoFinal().minusDays(1), 'dd/MM/yyyy') : ''}"></span>
+    </p>
+
+    <div class="valoresTotais">
+        <span>Total de Serviços: R$</span>
+        <span th:text="${#numbers.formatDecimal(f.getFechamentoValorServicos(), 2, 'POINT', 2, 'COMMA')}">0,00</span>
+        <br/>
+        <span>Total de Produtos: R$ </span>
+        <span th:text="${#numbers.formatDecimal(f.getFechamentoValorProdutos(), 2, 'POINT', 2, 'COMMA')}">0,00</span>
+
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Início</th>
+            <th>Fim</th>
+            <th>Técnico</th>
+            <th>Descrição</th>
+            <th>Horas</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="v : ${f.getVisitas()}"
+            th:with="minutes=${(v.getVisitaInicio() == null or v.getVisitaFinal() == null) ?
+            0 : T(java.time.Duration).between(v.getVisitaInicio(), v.getVisitaFinal()).toMinutes()},
+            hours=${minutes / 60}">
+            <td th:text="${#temporals.format(v.getVisitaInicio(), 'dd/MM/yyyy HH:mm')}">
+                00/00/0000 00:00
+            </td>
+            <td th:text="${#temporals.format(v.getVisitaFinal(),  'dd/MM/yyyy HH:mm')}">
+                00/00/0000 00:00
+            </td>
+            <td th:text="${v.getFuncionarios()}">Técnico</td>
+            <td th:text="${v.getVisitaDescricao()}">Descrição</td>
+            <td th:text="${#numbers.formatDecimal(hours, 1, 'POINT', 1, 'COMMA')}">
+                0,0
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(f.getVisitas())}">
+            <td colspan="5" class="muted">Nenhuma visita registrada.</td>
+        </tr>
+
+        </tbody>
+    </table>
+
+    <!-- Quebra de página opcional antes da seção de produtos -->
+    <div class="page-break"></div>
+
+    <div>
+        <span>Produtos</span>
+    </div>
+
+    <div>
+        <table>
+            <thead>
+            <tr>
+                <th>Descrição</th>
+                <th>Qtd</th>
+                <th>Vlr Unit (R$)</th>
+                <th>Subtotal (R$)</th>
+            </tr>
+            </thead>
+            <tbody>
+                <!-- Caso não haja visitas, já mostra vazio -->
+                <tr th:if="${#lists.isEmpty(f.getVisitas())}">
+                    <td colspan="5" class="muted">Nenhum produto lançado.</td>
+                </tr>
+                <th:block th:each="v : ${f.getVisitas()}">
+                    <tr th:if="${#lists.isEmpty(v.getProdutos())}"></tr>
+
+                    <tr
+                            th:each="p : ${v.getProdutos()}"
+                            th:with="
+        precoBD=${T(java.math.BigDecimal).valueOf(p.getPreco() == null ? 0.0 : p.getPreco().doubleValue())},
+        qtdBD=${T(java.math.BigDecimal).valueOf(p.getQuantidade() == null ? 0.0 : p.getQuantidade().doubleValue())}
+      "
+                    >
+                        <td th:text="${p.getNome()}">DESC</td>
+                        <td class="right" th:text="${p.getQuantidade()}">0</td>
+                        <td
+                                class="right"
+                                th:text="${#numbers.formatDecimal(precoBD, 2, 'POINT', 2, 'COMMA')}"
+                        >
+                            0,00
+                        </td>
+                        <td
+                                class="right"
+                                th:text="${#numbers.formatDecimal(precoBD.multiply(qtdBD), 2, 'POINT', 2, 'COMMA')}"
+                        >
+                            0,00
+                        </td>
+                    </tr>
+                </th:block>
+            </tbody>
+        </table>
+
+        <table class="totais">
+            <tr>
+                <td class="lbl">Total Geral:</td>
+                <td
+                        class="val"
+                        th:text="'R$ ' + ${#numbers.formatDecimal(f.getFechamentoValorProdutos(), 2, 'POINT', 2, 'COMMA')}"
+                >
+                    0,00
+                </td>
+            </tr>
+        </table>
+    </div>
+</main>
+
+</body>
+</html>

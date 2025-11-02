@@ -1,18 +1,15 @@
 package br.com.ronna.control.dtos;
 
-import br.com.ronna.control.models.ClienteModel;
 import br.com.ronna.control.models.FuncionarioModel;
-import br.com.ronna.control.models.LocalModel;
 import br.com.ronna.control.models.ProdutoModel;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 @Data
-public class VisitaDto {
+public class VisitaFaturaDto {
 
     private LocalDateTime visitaInicio;
 
@@ -26,12 +23,12 @@ public class VisitaDto {
 
     private Double visitaTotalAbono;
 
-    private Set<FuncionarioModel> funcionarios;
+    private String funcionarios;
 
-    private UUID cliente;
+    private String cliente;
 
-    private UUID local;
+    private String localCliente;
 
-    private Set<ProdutoModel> produtos;
+    private Set<ProdutoFaturaDto> produtos;
 
 }

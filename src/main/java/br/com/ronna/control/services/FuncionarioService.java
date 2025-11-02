@@ -22,4 +22,6 @@ public interface FuncionarioService {
 
 
     Page<FuncionarioModel> findAll(Pageable pageable);
+
+    Page<FuncionarioModel> findAllAtivos(Pageable pageable);
 }

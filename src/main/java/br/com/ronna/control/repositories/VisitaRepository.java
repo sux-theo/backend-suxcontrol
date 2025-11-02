@@ -24,8 +24,11 @@ public interface VisitaRepository extends JpaRepository<VisitaModel, UUID>, JpaS
     Set<VisitaModel> listarVisitasPorClienteLocalEPeriodoFechamento(UUID localId, LocalDateTime periodoInicio, LocalDateTime periodoFinal);
 
     Page<VisitaModel> findVisitaModelByClienteAndVisitaInicioAfterAndVisitaFinalBefore(ClienteModel clienteModel, LocalDateTime periodoInicio, LocalDateTime periodoFinal, Pageable pageable);
+    // Visitas do Fechamento
     Set<VisitaModel> findVisitaModelByClienteAndVisitaInicioAfterAndVisitaFinalBefore(ClienteModel clienteModel, LocalDateTime periodoInicio, LocalDateTime periodoFinal);
 
+    @Query(value = "select * from tb_visitas where cliente_id= :clienteId and visita_inicio >= :periodoInicio AND visita_final <= :periodoFinal", nativeQuery = true)
+    Set<VisitaModel> provaVisitas(@Param("clienteId") UUID clienteId, @Param("periodoInicio") LocalDateTime periodoInicio, @Param("periodoFinal") LocalDateTime periodoFinal);
 
     Page<VisitaModel> findVisitaModelsByFuncionariosContaining(FuncionarioModel funcionarioModel, Pageable pageable);
 

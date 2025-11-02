@@ -39,6 +39,15 @@ public class FuncionarioController {
         return ResponseEntity.status(HttpStatus.OK).body(funcionarioModelPage);
     }
 
+    @GetMapping("/ativos")
+    public ResponseEntity<Page<FuncionarioModel>> buscarTodosFuncionariosAtivos(@PageableDefault(page = 0, size = 10,
+            sort = "funcionarioNome", direction = Sort.Direction.ASC)Pageable pageable){
+        log.debug("Listando todos os funcionários...");
+
+        Page<FuncionarioModel> funcionarioModelPage = funcionarioService.findAllAtivos(pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(funcionarioModelPage);
+    }
+
     @GetMapping("/{funcionarioId}")
     public ResponseEntity<Object> buscarFuncionario(@PathVariable (value = "funcionarioId") UUID funcionarioId) {
         log.debug("Buscando funcionario UUID: {}", funcionarioId);
