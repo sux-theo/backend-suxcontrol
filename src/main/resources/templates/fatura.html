@@ -109,6 +109,13 @@
             border-radius: 8px;
             margin-left: 55%;
         }
+
+        .abono {
+            background-color: #E6F5EA;
+        }
+        .remoto {
+            color: #e34d7d;
+        }
     </style>
 </head>
 <body>
@@ -163,9 +170,10 @@
 
         <tbody>
         <tr th:each="v : ${f.getVisitas()}"
-            th:with="minutes=${(v.getVisitaInicio() == null or v.getVisitaFinal() == null) ?
-            0 : T(java.time.Duration).between(v.getVisitaInicio(), v.getVisitaFinal()).toMinutes()},
-            hours=${minutes / 60}">
+            th:with="minutes=${(v.getVisitaInicio() == null or v.getVisitaFinal() == null) ? 0 : T(java.time.Duration).between(v.getVisitaInicio(), v.getVisitaFinal()).toMinutes()},
+             hours=${(minutes / 60.0) - (v.getVisitaTotalAbono() == null ? 0.0 : v.getVisitaTotalAbono().doubleValue())}"
+            th:classappend="${(v.getVisitaTotalAbono() != null and v.getVisitaTotalAbono() > 0 ? ' abono' : '') + (v.isVisitaRemoto() ? ' remoto' : '')}"
+        >
             <td th:text="${#temporals.format(v.getVisitaInicio(), 'dd/MM/yyyy HH:mm')}">
                 00/00/0000 00:00
             </td>
@@ -173,7 +181,7 @@
                 00/00/0000 00:00
             </td>
             <td th:text="${v.getFuncionarios()}">Técnico</td>
-            <td th:text="${v.getVisitaDescricao()}">Descrição</td>
+            <td th:text="${v.getVisitaDescricao() + 'TOTAL ABONADO NA VISITA: ' + v.getVisitaTotalAbono()}"  >Descrição</td>
             <td th:text="${#numbers.formatDecimal(hours, 1, 'POINT', 1, 'COMMA')}">
                 0,0
             </td>
@@ -247,6 +255,13 @@
                 </td>
             </tr>
         </table>
+        <br/><br/>
+        <div>
+            <hr/>
+            <span>Legenda: </span><br/>
+            <span class="abono">Linha em verde: Contem abono de tempo</span><br/>
+            <span class="remoto">Texto em vermelho: Visita remota</span>
+        </div>
     </div>
 </main>
 
