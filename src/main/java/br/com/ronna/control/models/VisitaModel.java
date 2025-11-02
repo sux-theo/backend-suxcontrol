@@ -81,4 +81,6 @@ public class VisitaModel {
     public int hashCode() {
         return Objects.hash(visitaId);
     }
+
+
 }
