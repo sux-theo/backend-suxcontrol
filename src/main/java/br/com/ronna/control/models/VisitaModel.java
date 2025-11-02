@@ -65,6 +65,10 @@ public class VisitaModel {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime updatedDate;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "TB_VISITA_PRODUTOS", joinColumns = @JoinColumn(name = "visitaId"))
+    private Set<ProdutoModel> produtos;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -77,4 +81,6 @@ public class VisitaModel {
     public int hashCode() {
         return Objects.hash(visitaId);
     }
+
+
 }

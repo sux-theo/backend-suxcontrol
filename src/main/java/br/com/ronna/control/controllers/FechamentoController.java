@@ -29,6 +29,7 @@ import lombok.var;
 import javax.swing.text.html.Option;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -54,6 +55,9 @@ public class FechamentoController {
 
     @Autowired
     private ContratoService contratoService;
+
+    @Autowired
+    private FaturaPdfService pdfService;
 
 
     //Controller com os métodos de CRUD para a entidade FechamentoModel
@@ -81,6 +85,33 @@ public class FechamentoController {
         FechamentoResponseDto fechamentoResponseDto = new FechamentoResponseDto();
         BeanUtils.copyProperties(fechamentoModelOptional.get(), fechamentoResponseDto);
         return ResponseEntity.status(HttpStatus.OK).body(fechamentoResponseDto);
+    }
+
+    @PostMapping("/imprimir/{fechamentoId}")
+    public ResponseEntity<byte[]> imprimirFatura(@PathVariable UUID fechamentoId) throws Exception{
+        // TODO: implementar a chamada do serviço de geração de fatura.
+        Optional<FechamentoModel> fModelOpt = fechamentoService.findById(fechamentoId);
+        if (!fModelOpt.isPresent()){
+            return ResponseEntity.notFound().build();
+        }
+
+        var fResponseDto = new FechamentoResponseDto();
+        fResponseDto.setFechamentoId(fModelOpt.get().getFechamentoId());
+        fResponseDto.setFechamentoStatus(fModelOpt.get().getFechamentoStatus());
+        fResponseDto.setFechamentoInicio(fModelOpt.get().getFechamentoInicio());
+        fResponseDto.setFechamentoFinal(fModelOpt.get().getFechamentoFinal());
+        fResponseDto.setFechamentoValorProdutos(fModelOpt.get().getFechamentoValorProdutos());
+        fResponseDto.setFechamentoValorServicos(fModelOpt.get().getFechamentoValorServicos());
+
+        fResponseDto.setVisitas(fModelOpt.get().getVisitas());
+
+        byte[] pdf = pdfService.gerarFaturaPdf(fResponseDto);
+
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
+                "inline; filename="+LocalDate.now().getDayOfMonth()+"/"+ LocalDate.now().getMonth()+1 +"/" + LocalDate.now().getYear() +
+                        " fatura-clienteId"+fModelOpt.get().getCliente().getClienteNome()+".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 
     @GetMapping("/cliente/{clienteId}")
