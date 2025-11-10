@@ -181,7 +181,7 @@
                 00/00/0000 00:00
             </td>
             <td th:text="${v.getFuncionarios()}">Técnico</td>
-            <td th:text="${v.getVisitaDescricao() + 'TOTAL ABONADO NA VISITA: ' + v.getVisitaTotalAbono()}"  >Descrição</td>
+            <td th:text="${v.getLocalCliente()} + ' - ' + ${v.getVisitaDescricao() + 'TOTAL ABONADO NA VISITA: ' + v.getVisitaTotalAbono()}"  >Descrição</td>
             <td th:text="${#numbers.formatDecimal(hours, 1, 'POINT', 1, 'COMMA')}">
                 0,0
             </td>
